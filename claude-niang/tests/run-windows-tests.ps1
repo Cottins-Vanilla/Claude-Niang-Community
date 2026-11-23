@@ -534,6 +534,38 @@ public static class CnLaunchWindows{
     }finally{if(!$process.HasExited){$process.Kill()};$process.Dispose()}
     Assert (!(Test-Path -LiteralPath (Join-Path $config.dataDir 'worker-status.json'))) 'Check-only started quota worker'
   }
+  Case 'Usage window compiles and renders both pages from local data without errors' {
+    $dash=Join-Path $scratch 'usage-window';$state=Join-Path $dash 'state';$projects=Join-Path $dash 'claude\projects\E--Work-alpha'
+    $null=[IO.Directory]::CreateDirectory($state);$null=[IO.Directory]::CreateDirectory($projects)
+    $now=[DateTimeOffset]::UtcNow;$ms=$now.ToUnixTimeMilliseconds();$s=$now.ToUnixTimeSeconds()
+    $lines=@(for($i=0;$i-lt 12;$i++){
+      $time=$now.AddDays(-$i).ToString('o')
+      '{"type":"assistant","timestamp":"'+$time+'","cwd":"E:\\Work\\alpha","sessionId":"s'+($i%3)+'","entrypoint":"claude-desktop","isSidechain":false,"message":{"id":"m'+$i+'","model":"claude-opus-5-5","content":[{"type":"text","text":"SECRET"}],"usage":{"input_tokens":'+(10+$i)+',"output_tokens":'+(1000*($i+1))+',"cache_creation_input_tokens":500,"cache_read_input_tokens":40000,"cache_creation":{"ephemeral_5m_input_tokens":0,"ephemeral_1h_input_tokens":500},"speed":"standard"}}}'
+    })
+    [IO.File]::WriteAllText((Join-Path $projects 'session.jsonl'),($lines-join "`n")+"`n",[Text.UTF8Encoding]::new($false))
+    Write-WidgetJson (Join-Path $state 'status.json') @{ok=$true;queryOk=$true;source='claude.ai';observedAt=$ms;checkedAt=$ms;planLabel='Max 5x';selectedOrg='org-a';sessionEpoch='e1'
+      orgs=@(@{uuid='org-a';name='Personal <b>bold</b>';planLabel='Max 5x'},@{uuid='org-b';name='Team B';planLabel='Team'})
+      windows=@(@{kind='session';key='session';label='5 小时';used=95;remaining=5;resetsAt=($s+3600)},@{kind='weekly';key='weekly';label='每周';used=20;remaining=80;resetsAt=($s+86400*3)},
+        @{kind='extra';key='extra';label='额外用量';used=25;remaining=75;usedMinor=1250;limitMinor=5000;currency='USD'})
+      credits=@{amountMinor=725;currency='USD';observedAt=$ms}}
+    Write-WidgetJson (Join-Path $state 'org-snapshots.json') @{version=1;sessionEpoch='e1';orgs=@{'org-b'=@{uuid='org-b';observedAt=($ms-7200000);planLabel='Team';windows=@(@{kind='weekly';key='weekly';label='每周';used=40;remaining=60;resetsAt=($s-60)})}}}
+    $config=Join-Path $dash 'installation.json'
+    Write-WidgetJson $config @{dataDir=$state;nodePath=(Get-Command node -ErrorAction Stop).Source}
+    $hostScript=Join-Path $appDir 'runtime\dashboard-host.ps1';$ps=Join-Path $env:WINDIR 'System32\WindowsPowerShell\v1.0\powershell.exe'
+    $check=& $ps -NoProfile -STA -ExecutionPolicy Bypass -File $hostScript -ConfigPath $config -CheckOnly
+    Assert ((($check|Select-Object -Last 1)|ConvertFrom-Json).ok) ('Window components did not load: '+($check-join ' '))
+    $savedConfigDir=$env:CLAUDE_CONFIG_DIR;$env:CLAUDE_CONFIG_DIR=Join-Path $dash 'claude'
+    try{
+      foreach($view in @('overview','ledger-end')){
+        $png=Join-Path $dash ($view+'.png')
+        $out=& $ps -NoProfile -STA -ExecutionPolicy Bypass -File $hostScript -ConfigPath $config -Snapshot $png -View $view -Width 1600 -Height 1200 2>&1
+        Assert ($LASTEXITCODE-eq 0) ("$view failed: "+($out-join ' '))
+        Assert ((Test-Path -LiteralPath $png) -and (Get-Item -LiteralPath $png).Length-gt 20000) ("$view image missing or blank")
+      }
+    }finally{$env:CLAUDE_CONFIG_DIR=$savedConfigDir}
+    $index=[IO.File]::ReadAllText((Join-Path $state 'usage-index.json'))
+    Assert ($index-match '"m11"' -and $index-notmatch 'SECRET') 'Usage index missing records or holding text'
+  }
 }finally{
   $summary=[pscustomobject]@{tests=$results.Count;passed=@($results|Where-Object{$_.passed}).Count;failed=@($results|Where-Object{!$_.passed}).Count;results=$results.ToArray()}
   if($ResultPath){[IO.File]::WriteAllText([IO.Path]::GetFullPath($ResultPath),($summary|ConvertTo-Json -Depth 8),[Text.UTF8Encoding]::new($false))}

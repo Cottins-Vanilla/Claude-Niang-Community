@@ -7,6 +7,7 @@ import {readJson} from './shared.mjs';
 import {readPendingRequests,completeRequests,cleanRefreshResults} from './refresh-client.mjs';
 import {createPipeRefreshHandler} from './worker-ipc.mjs';
 import {updateDailyLedger} from './daily.mjs';
+import {rememberOrganization,forgetOrganizations} from './org-snapshots.mjs';
 import {pluginVersion} from './metadata.mjs';
 import {writeLog} from './log.mjs';
 
@@ -60,6 +61,8 @@ function save(data){
   const cleaned={...data,refreshMode:'manual',sessionEpoch:sessionToken};
   for(const key of ['pollMinutes','peakTag','peakHours'])delete cleaned[key];
   atomicJson(statusFile,cleaned);status=cleaned;
+  // The overview's per-organization cards; a failure here never affects the bubble.
+  try{rememberOrganization(config.dataDir,cleaned,sessionToken);}catch{}
 }
 function pending(message='点角色或 ↻ 手动读取 Claude 额度',code='MANUAL'){
   const orgs=Array.isArray(status?.orgs)?status.orgs:[],row=orgs.find(org=>org.uuid===preference);
@@ -74,6 +77,7 @@ function syncContext(){
   Object.assign(orgCache,newOrganizationCache());lastCreditsAt=0;lastBootstrapAt=0;creditsRetryAt=0;
   if(changedSession){
     status=null;try{fs.unlinkSync(file('daily.json'));}catch{}
+    forgetOrganizations(config.dataDir);
     // A rate limit belonged to the previous sign-in; a new sign-in or sign-out
     // starts without it. Switching organizations keeps it (same account).
     blockedUntil=0;try{fs.unlinkSync(backoffFile);}catch{}

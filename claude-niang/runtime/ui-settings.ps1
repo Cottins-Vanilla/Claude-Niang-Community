@@ -116,6 +116,7 @@ function Initialize-WidgetSettingsMenu {
 '@)
   $script:settingsMenuUi.Bubble=Add-SettingsAction '查看额度' {if(!$script:collapsed -and $script:bubbleMode-eq 'quota'){Hide-Quota}else{Show-Quota}} -ReturnItem
   Add-SettingsAction '刷新额度' {Request-Refresh}
+  Add-SettingsAction '账户总览' {Open-WidgetDashboard}
   $script:settingsMenuUi.Quote=Add-SettingsAction '换一句台词' {Show-Quote} -ReturnItem
   Add-SettingsDivider
   $script:settingsMenuUi.Account=Add-SettingsSubmenu 'Claude 账号' {

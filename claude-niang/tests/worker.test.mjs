@@ -211,3 +211,15 @@ test('a settings file caught mid-write is not mistaken for switching organizatio
   const kept=s.status();assert.equal(kept.ok,true);assert.equal(kept.selectedOrg,fx.ORG_MAX);assert.equal(kept.errorCode,undefined);
   s.select(fx.ORG_MAX);await wait(700);assert.equal(s.status().ok,true);assert.equal(s.count(),1);
 });
+test('each organization keeps its last good read for the account overview; a new sign-in clears them',async t=>{
+  const s=setup(t),file=path.join(s.dataDir,'org-snapshots.json');await start(s);
+  assert.equal((await ask(s)).selectedOrg,fx.ORG_MAX);
+  s.select(fx.ORG_TEAM);await until(()=>s.status()?.selectedOrg===fx.ORG_TEAM && s.status()?.errorCode==='SWITCHING_ORG');
+  assert.equal((await ask(s)).selectedOrg,fx.ORG_TEAM);
+  const saved=read(file);
+  assert.deepEqual(Object.keys(saved.orgs).sort(),[fx.ORG_MAX,fx.ORG_TEAM].sort());
+  assert.equal(saved.orgs[fx.ORG_TEAM].windows[0].used,8);assert.equal(saved.orgs[fx.ORG_MAX].planLabel,'Max 20x');
+  assert.equal(saved.sessionEpoch,s.status().sessionEpoch);
+  s.session('signed-in');await until(()=>s.status()?.errorCode==='MANUAL');
+  assert.deepEqual(read(file).orgs,{},'a new sign-in kept the previous account’s organizations');
+});
