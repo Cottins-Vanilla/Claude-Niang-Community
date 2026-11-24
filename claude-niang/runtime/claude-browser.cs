@@ -1,4 +1,5 @@
-﻿// Claude娘 · WebView2 helper. Compiled at runtime by claude-browser.ps1 (C# 5).
+﻿// Copyright (c) 2026 Gryphus-Triune (Claude-Niang adaptations and additions)
+// Claude娘 · WebView2 helper. Compiled at runtime by claude-browser.ps1 (C# 5).
 // The helper is the widget's own small browser: the user signs in to claude.ai
 // in a visible window once, and later quota reads reuse that profile.
 // Page scripts are disabled for quota reads and challenges are never solved

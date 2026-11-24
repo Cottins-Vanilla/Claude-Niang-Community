@@ -172,10 +172,23 @@ claude.ai 的网页接口不是公开 API，随时可能变化而失效。请遵
 
 测试、构建和干净打包的方法见 [CONTRIBUTING.md](CONTRIBUTING.md)。工作流配置在 `.github/workflows/ci.yml`；实际运行结果以 [GitHub Actions](https://github.com/Gryphus-Triune/Claude-Niang/actions) 为准。
 
+## 项目来源与 Claude 适配
+
+Claude 娘基于 T7moris 与贡献者的 GPT-Niang 1.3.5 Windows 版开发，由 Gryphus-Triune 独立维护。 [GPT-Niang 原仓库](https://github.com/T7moris/GPT-Niang)
+
+- 适配 Claude 桌面窗口的挂件定位与显隐，增加独立的 claude.ai 登录窗口和组织切换。
+- 改为手动读取 Claude 套餐、5 小时与每周额度、分模型额度和重置时间，并单独显示额外用量与预付余额的读取状态。
+- 增加低额度与重置提醒，按组织记录本机今日观测到的用量变化。
+- 提供可选的 Claude 桌面扩展，在对话里查看本机额度快照，或明确请求刷新。
+
 ## 许可与致谢
 
-基于 [GPT 娘 1.3.5](https://github.com/T7moris/GPT-Niang)（MIT）改写，借鉴了[小鲸鱼余额挂件](https://github.com/MeteorNOX/DeepSeek-Balance-Whale-Widget)的提醒与记账思路。内置语录中有 7 句来自该项目，来源与许可见 [语录许可说明](claude-niang/assets/quotes-LICENSE.txt)。
+代码、配套文档、项目自写语录及点击音效采用 MIT 许可。许可文件保留 T7moris 和 GPT-Niang contributors 的原版权声明，Claude 适配及新增代码署名为 Gryphus-Triune。 [MIT 许可](LICENSE)
 
-源代码、内置语录和点击音效遵循 [MIT License](LICENSE)，保留 GPT 娘原作者和贡献者的署名。默认形象图片（`claude-niang/assets/claude-niang.png`）和由它做成的扩展图标版权归仓库作者所有，不在 MIT 许可范围内。WebView2 文件遵循微软自己的许可，见 `claude-niang/runtime/webview2/LICENSE.txt` 与 `NOTICE.txt`。
+默认角色图由 Gryphus-Triune 原创，桌面扩展图标由该图制作。角色图及衍生图标的使用范围见独立声明。 [角色图片使用说明](CHARACTER-NOTICE.txt)
+
+提醒与用量观测借鉴了 MeteorNOX 的小鲸鱼余额挂件。内置语录中有 7 句经 GPT-Niang 沿用自该项目，保留其原版权与 MIT 许可。 [小鲸鱼原仓库](https://github.com/MeteorNOX/DeepSeek-Balance-Whale-Widget) · [语录许可](claude-niang/assets/quotes-LICENSE.txt)
+
+随包分发的 WebView2 SDK 文件遵循微软的许可并保留第三方声明。 [WebView2 许可](claude-niang/runtime/webview2/LICENSE.txt) · [WebView2 第三方声明](claude-niang/runtime/webview2/NOTICE.txt)
 
 Claude 是 Anthropic 的商标。本项目与 Anthropic 没有关联。

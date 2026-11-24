@@ -53,7 +53,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\build-release.ps1
 
 ## 扩展与资源
 
-`claude-niang/runtime/mcp.mjs` 是 MCP 服务源码，和后台共享 `runtime/shared.mjs`。构建会将这两个文件复制进扩展的 `server/`，把根目录 `LICENSE` 复制进扩展，并从 `package.json` 同步扩展版本。扩展运行时读取 manifest 的版本；`shared.mjs` 不应引用扩展中不存在的本地模块。
+`claude-niang/runtime/mcp.mjs` 是 MCP 服务源码，和后台共享 `runtime/shared.mjs`。构建会将这两个文件复制进扩展的 `server/`，把根目录的 `LICENSE` 和 `CHARACTER-NOTICE.txt` 复制进扩展，并从 `package.json` 同步扩展版本。扩展运行时读取 manifest 的版本；`shared.mjs` 不应引用扩展中不存在的本地模块。
 
 默认形象、墨镜标定和资源维护见 [自定义资源说明](docs/customization.md)。内置语录的上游署名和许可见 `claude-niang/assets/quotes-LICENSE.txt`，发布包必须保留该文件。文档中的界面预览使用示例数据；添加效果展示时，说明它是实机截图、离线渲染还是示意图，并去除真实账号信息。
 

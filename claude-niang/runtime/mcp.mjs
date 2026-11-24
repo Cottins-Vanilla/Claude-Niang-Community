@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Copyright (c) 2026 Gryphus-Triune (Claude-Niang adaptations and additions)
 // Claude娘额度 · MCP server for Claude Desktop.
 // The same file runs from the widget folder and from the packaged Claude
 // Desktop extension (.mcpb), where the release puts shared.mjs next to it. It

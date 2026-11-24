@@ -1,4 +1,5 @@
-﻿// Finds the Claude desktop main window (Electron, Chrome_WidgetWin_1).
+﻿// Copyright (c) 2026 Gryphus-Triune (Claude-Niang adaptations and additions)
+// Finds the Claude desktop main window (Electron, Chrome_WidgetWin_1).
 // Shared by widget.ps1 and supervisor.ps1. Read-only: nothing here changes
 // the Claude window.
 using System;

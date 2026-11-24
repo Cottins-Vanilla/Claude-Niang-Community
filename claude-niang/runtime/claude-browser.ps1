@@ -1,4 +1,5 @@
-﻿param(
+﻿# Copyright (c) 2026 Gryphus-Triune (Claude-Niang adaptations and additions)
+param(
   [ValidateSet('fetch','login','logout','check')][string]$Mode='fetch',
   [string]$ConfigPath='',
   [string]$OutFile='',

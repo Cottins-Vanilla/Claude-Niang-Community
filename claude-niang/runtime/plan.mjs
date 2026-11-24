@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Gryphus-Triune (Claude-Niang adaptations and additions)
 // Claude plan identification. A plan name is metadata only: the windows shown
 // in the bubble always come from what claude.ai actually returns.
 const names={free:'Free',pro:'Pro',max:'Max',max_5x:'Max 5x',max_20x:'Max 20x',team:'Team',enterprise:'Enterprise'};

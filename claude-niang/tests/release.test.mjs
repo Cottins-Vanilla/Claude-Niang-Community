@@ -26,7 +26,7 @@ test('README version and linked distribution resources match the release',()=>{
   assert.ok(version,'README must identify the current program version');
   assert.equal(version[1],packageInfo.version);
   const files=releaseFiles(root);
-  for(const resource of ['docs/screenshot.png','docs/customization.md','claude-niang/assets/quotes-LICENSE.txt']){
+  for(const resource of ['docs/screenshot.png','docs/customization.md','LICENSE','CHARACTER-NOTICE.txt','claude-niang/assets/quotes-LICENSE.txt']){
     assert.ok(readme.includes(resource),'README should link to '+resource);
     assert.ok(files.includes(resource),'release should contain '+resource);
   }
@@ -39,7 +39,10 @@ test('release tree synchronizes MCP version and code without touching local inst
   const app=path.join(out,'claude-niang'),manifest=JSON.parse(fs.readFileSync(path.join(app,'extension','manifest.json'),'utf8'));
   assert.equal(manifest.version,info.version);assert.deepEqual(fs.readFileSync(path.join(app,'runtime','mcp.mjs')),fs.readFileSync(path.join(app,'extension','server','index.mjs')));
   assert.deepEqual(fs.readFileSync(path.join(app,'runtime','shared.mjs')),fs.readFileSync(path.join(app,'extension','server','shared.mjs')));
-  assert.ok(fs.existsSync(path.join(app,'extension','LICENSE')));assert.equal(fs.existsSync(path.join(app,'installation.json')),false);
+  for(const notice of ['LICENSE','CHARACTER-NOTICE.txt']){
+    assert.deepEqual(fs.readFileSync(path.join(app,'extension',notice)),fs.readFileSync(path.join(out,notice)));
+  }
+  assert.equal(fs.existsSync(path.join(app,'installation.json')),false);
   if(before)assert.deepEqual(fs.readFileSync(config),before);
 });
 test('packaged extension server runs on its own and reports the manifest version',()=>{
