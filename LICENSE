@@ -28,8 +28,10 @@ quotes also retain the upstream copyright and MIT notice in
 claude-niang/assets/quotes-LICENSE.txt.
 
 The default character image (claude-niang/assets/claude-niang.png) and the
-extension icon made from it (claude-niang/extension/icon.png) are (c) the
-repository owner and are not covered by this license. Images that you import into
+extension icon made from it (claude-niang/extension/icon.png) are (c) the owner
+of the original Claude-Niang repository (https://github.com/Gryphus-Triune/Claude-Niang)
+and are not covered by this license. The community fork keeps them unchanged
+and will replace or remove them if the copyright holder asks. Images that you import into
 the widget remain yours.
 
 Third-party files: claude-niang/runtime/webview2/ contains the Microsoft Edge

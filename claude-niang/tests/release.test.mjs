@@ -66,7 +66,8 @@ test('release metadata requires one exact stable version across the tag, manifes
   reset();assert.deepEqual(validateReleaseMetadata(dir,'v2.3.4'),{version:'2.3.4',tag:'v2.3.4',notes:'Fixed a bug.'});
   for(const tag of ['2.3.4','v2.3.5','v02.3.4','v2.3.4-repack.1','v2.3.4-beta'])assert.throws(()=>validateReleaseMetadata(dir,tag));
   for(const [file,text] of [['claude-niang/extension/manifest.json','{"version":"2.3.3"}'],['README.md','**当前程序版本：2.3.3**'],['CHANGELOG.md','## 2.3.4-repack.1\nWrong section'],['CHANGELOG.md','## 2.3.4\n\n## 2.3.3\nOld'],['CHANGELOG.md','## 2.3.4\nA\n## 2.3.4\nB']]){reset();write(file,text);assert.throws(()=>validateReleaseMetadata(dir,'v2.3.4'),file);}
-  for(const stale of ['https://github.com/Gryphus-Triune/Claude-Niang/releases/tag/v2.3.3','https://github.com/Gryphus-Triune/Claude-Niang/releases/download/v2.3.3/claude-niang-usage.mcpb','claude-niang-v2.3.3-windows.zip','https://img.shields.io/badge/Release-v2.3.3-D97757']){
+  for(const stale of ['https://github.com/Gryphus-Triune/Claude-Niang/releases/tag/v2.3.3','https://github.com/Gryphus-Triune/Claude-Niang/releases/download/v2.3.3/claude-niang-usage.mcpb',
+    'https://github.com/someone/Claude-Niang-Community/releases/tag/v2.3.3','https://github.com/someone/Claude-Niang-Community/releases/latest/download/claude-niang-usage.mcpb','claude-niang-v2.3.3-windows.zip','https://img.shields.io/badge/Release-v2.3.3-D97757']){
     reset();write('README.md','**当前程序版本：2.3.4**\n'+stale);assert.throws(()=>validateReleaseMetadata(dir,'v2.3.4'),/README/,'updating version text alone must not leave stale download links');
   }
   assert.equal(validateReleaseMetadata(root,'v'+JSON.parse(fs.readFileSync(path.join(root,'claude-niang/package.json'))).version).version,JSON.parse(fs.readFileSync(path.join(root,'claude-niang/package.json'))).version);

@@ -5,7 +5,7 @@ import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 
 const rootFiles=['README.md','LICENSE','CHANGELOG.md','CONTRIBUTING.md','.gitignore','.gitattributes','build-release.ps1',
-  '安装Claude娘.cmd','打开Claude娘.cmd','登录Claude账号.cmd','检测套餐.cmd','停用Claude娘.cmd','tools/release.mjs','tools/quote-layouts.ps1',
+  '安装Claude娘.cmd','打开Claude娘.cmd','登录Claude账号.cmd','检测套餐.cmd','停用Claude娘.cmd','tools/release.mjs','tools/commit-hygiene.mjs','tools/quote-layouts.ps1',
   'docs/screenshot.png','docs/images/quota-preview.png','docs/customization.md','claude-niang/assets/quotes-LICENSE.txt','.github/workflows/ci.yml'];
 function safeRelative(value){
   if(typeof value!=='string' || !value || value.includes('\\') || path.posix.isAbsolute(value) || /^[A-Za-z]:/.test(value) || value.split('/').some(x=>!x || x==='.' || x==='..'))throw new Error('Unsafe release path');
@@ -68,8 +68,9 @@ export function validateReleaseMetadata(root,tag){
   if(JSON.parse(read('claude-niang/extension/manifest.json')).version!==version)throw new Error('Extension manifest version does not match package.json');
   const readme=read('README.md'),readmeVersions=[...readme.matchAll(/\*\*当前程序版本：([^*]+)\*\*/g)];
   if(readmeVersions.length!==1 || readmeVersions[0][1]!==version)throw new Error('README current version does not match package.json');
-  const links=[...readme.matchAll(/https:\/\/github\.com\/Gryphus-Triune\/Claude-Niang\/releases\/(?:tag|download)\/([^/\s)"#?]+)/g)];
-  if(links.some(match=>match[1]!==tag) || readme.includes('https://github.com/Gryphus-Triune/Claude-Niang/releases/latest/download/'))throw new Error('README release links must use the exact current version tag');
+  // Any repository's release link counts, so a fork or a renamed repository is checked the same way.
+  const links=[...readme.matchAll(/https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/releases\/(?:tag|download)\/([^/\s)"#?]+)/g)];
+  if(links.some(match=>match[1]!==tag) || /https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/releases\/latest\/download\//.test(readme))throw new Error('README release links must use the exact current version tag');
   if([...readme.matchAll(/claude-niang-v([^\s/"`]+)-windows\.zip/g)].some(match=>match[1]!==version))throw new Error('README ZIP filenames must match package.json');
   if([...readme.matchAll(/img\.shields\.io\/badge\/Release-v([0-9.]+)-/g)].some(match=>match[1]!==version))throw new Error('README release badge must match package.json');
   const lines=read('CHANGELOG.md').split(/\r?\n/),heading=new RegExp('^## '+version.replace(/\./g,'\\.')+'(?:\\s|$)');
@@ -101,7 +102,7 @@ export async function publishRelease({metadata,assets,sha,repository,event,ref,r
   if(event!=='workflow_dispatch' || ref!=='refs/heads/main' || !/^[a-f0-9]{40}$/.test(sha??'') || !/^[\w.-]+\/[\w.-]+$/.test(repository??''))throw new Error('Releases must be dispatched from main at a full commit SHA');
   const {version,tag,notes}=metadata,expected=assetNames(version);
   if(!stableVersion.test(version) || tag!=='v'+version || assets.length!==3 || new Set(assets.map(a=>a.name)).size!==3 || assets.some(a=>!expected.includes(a.name)))throw new Error('Invalid release metadata or asset set');
-  const api='/repos/'+repository,title='Claude 娘 '+tag+' · Windows';
+  const api='/repos/'+repository,title='Claude 娘社区版 '+tag+' · Windows';
   const body=notes+'\n\n<!-- claude-niang-release '+sha+' '+tag+' -->';
   const ownedDraft=value=>value?.draft===true && value.prerelease===false && value.immutable!==true && value.tag_name===tag && value.target_commitish===sha && value.name===title && value.body===body;
   const tagSha=async()=>{

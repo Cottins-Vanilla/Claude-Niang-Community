@@ -2,6 +2,16 @@
 
 使用 Node.js 20 或更新（建议官网 LTS 版）和 Windows PowerShell 5.1。运行测试不需要登录 Claude，也不会访问真实 Claude 账号。
 
+本仓库是 [Gryphus-Triune/Claude-Niang](https://github.com/Gryphus-Triune/Claude-Niang) 的社区维护版。维护规范放在 `.claude/skills/`：[版本号](.claude/skills/release-version/SKILL.md)、[发布页格式与发布步骤](.claude/skills/release-page/SKILL.md)、[提交与推送检查](.claude/skills/commit-hygiene/SKILL.md)。用 Claude Code 维护时会自动按这些规范做，人工维护时同样适用。
+
+## 克隆后先做
+
+```powershell
+git config core.hooksPath .githooks
+```
+
+启用仓库自带的 Git 钩子：提交前检查暂存的文件，推送前检查所有还没推送过的提交，拦下临时文件、本机路径、私人邮箱和常见令牌。提交邮箱请用 GitHub 的 noreply 地址（`git config user.email "<编号>+<用户名>@users.noreply.github.com"`），推送检查会拒绝其他邮箱。要额外拦截的个人词语（真实姓名、组织名等）写在 `.git/info/hygiene-patterns`，每行一个，这个文件不会被提交。被拦下时的处理方法见 [提交与推送检查](.claude/skills/commit-hygiene/SKILL.md)。
+
 ## 运行检查
 
 在仓库中的 `claude-niang` 目录执行：
@@ -12,11 +22,11 @@ npm test
 npm run test:windows
 ```
 
-提交前运行这两组检查。模拟响应放在 `claude-niang/tests/fixtures`；新增样本请移除 Cookie、令牌、邮箱、真实组织名称和编号。
+提交前运行这两组检查，以及 `node tools/commit-hygiene.mjs --all`（在仓库根目录）。模拟响应放在 `claude-niang/tests/fixtures`；新增样本请移除 Cookie、令牌、邮箱、真实组织名称和编号。
 
 额度只能由明确的用户操作读取。涉及启动、恢复窗口、切换组织、登录状态改变、并发请求或失败路径的修改，应验证不会引入后台查询。不要把接口没有返回的窗口或已过重置时间的旧值当成当前剩余额度。
 
-GitHub Actions 配置在 `.github/workflows/ci.yml`，在 Windows 上检查 Node.js 20、22、24 并试打包。通过情况以对应提交的 [Actions 运行结果](https://github.com/Gryphus-Triune/Claude-Niang/actions)为准。
+GitHub Actions 配置在 `.github/workflows/ci.yml`，在 Windows 上检查 Node.js 20、22、24、运行提交检查并试打包。通过情况以对应提交的 [Actions 运行结果](https://github.com/Cottins-Vanilla/Claude-Niang-Community/actions)为准。
 
 ## 生成干净发布包
 
@@ -39,10 +49,10 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\build-release.ps1
 
 ## 发布正式版本
 
-一个程序版本只对应一个 `vX.Y.Z` 标签和一个 Release，不再使用 `repack`、预发布后缀或同版本的第二个发布记录。已经公开的标签和附件不能覆盖；后续修复应增加程序版本。
+一个程序版本只对应一个 `vX.Y.Z` 标签和一个 Release，不再使用 `repack`、预发布后缀或同版本的第二个发布记录。已经公开的标签和附件不能覆盖；后续修复应增加程序版本。版本号怎么定见 [版本号规范](.claude/skills/release-version/SKILL.md)，CHANGELOG 版本章节（即发布页正文）的格式见 [发布页规范](.claude/skills/release-page/SKILL.md)。
 
 1. 同步更新 `claude-niang/package.json`、`claude-niang/extension/manifest.json`、README 的 `**当前程序版本：X.Y.Z**`、版本徽章、版本说明与附件下载链接，以及 CHANGELOG 中唯一的 `## X.Y.Z` 章节，提交并合并到 `main`。下载链接须写明相同的 `vX.Y.Z` 标签和 ZIP 文件名，不使用 `latest/download` 搭配固定版本文件名。
-2. 在 [Release 工作流](https://github.com/Gryphus-Triune/Claude-Niang/actions/workflows/release.yml)选择 **Run workflow**，分支选 `main`，输入精确标签，例如 `v1.3.4`。不需要提前创建标签，也不需要另行上传附件；推送标签不会自动发布。
+2. 在 [Release 工作流](https://github.com/Cottins-Vanilla/Claude-Niang-Community/actions/workflows/release.yml)选择 **Run workflow**，分支选 `main`，输入精确标签，例如 `v2.0.1`。也可以用 GitHub CLI：`gh workflow run release.yml --ref main -f release_tag=v2.0.1`。不需要提前创建标签，也不需要另行上传附件；推送标签不会自动发布。
 3. 工作流先校验上述版本与发布说明，再完成 Node 测试、Windows 集成检查和干净打包，随后才创建标签和草稿 Release。最终附件严格为 Windows ZIP、该 ZIP 的 `.sha256` 和从同一 ZIP 提取的 `.mcpb`；本地校验和远端附件的名称、数量、大小及 SHA256 全部通过后才公开。
 
 工作流固定使用触发时 `main` 的提交，测试、构建和发布始终对应同一个 SHA；`main` 后续的正常提交不会改变本次发布源码。创建发布前及上传完成后都会核对标签仍指向该提交。已有标签指向其他提交、已有正式 Release，或出现不属于本流程的草稿时，工作流会停止，不会移动标签或覆盖发布记录。

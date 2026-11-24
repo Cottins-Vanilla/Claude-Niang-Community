@@ -1,15 +1,18 @@
 <div align="center">
   <img src="claude-niang/extension/icon.png" alt="Claude 娘" width="96">
-  <h1>Claude 娘</h1>
+  <h1>Claude 娘 · 社区版</h1>
   <p><strong>把 Claude 额度，放进桌面角色的气泡里。</strong></p>
-  <p>点一下看额度与重置时间，也可以换形象、写语录，让她跟着音乐跳动。</p>
+  <p>点一下看额度与重置时间，打开用量管理看本机 Claude Code 用量；也可以换形象、写语录，让她跟着音乐跳动。</p>
   <p>
-    <a href="https://github.com/Gryphus-Triune/Claude-Niang/releases/tag/v1.3.3"><img src="https://img.shields.io/badge/Release-v1.3.3-D97757" alt="当前版本 1.3.3"></a>
-    <a href="https://github.com/Gryphus-Triune/Claude-Niang/actions/workflows/ci.yml"><img src="https://github.com/Gryphus-Triune/Claude-Niang/actions/workflows/ci.yml/badge.svg?branch=main" alt="自动检查状态"></a>
+    <a href="https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/tag/v2.0.0"><img src="https://img.shields.io/badge/Release-v2.0.0-D97757" alt="当前版本 2.0.0"></a>
+    <a href="https://github.com/Cottins-Vanilla/Claude-Niang-Community/actions/workflows/ci.yml"><img src="https://github.com/Cottins-Vanilla/Claude-Niang-Community/actions/workflows/ci.yml/badge.svg?branch=main" alt="自动检查状态"></a>
     <img src="https://img.shields.io/badge/Windows-10%20%2F%2011-0078D4" alt="面向 Windows 10 / 11">
   </p>
-  <p><a href="https://github.com/Gryphus-Triune/Claude-Niang/releases/download/v1.3.3/claude-niang-v1.3.3-windows.zip"><strong>下载 Windows 完整包</strong></a> · <a href="#下载与安装">安装说明</a> · <a href="https://github.com/Gryphus-Triune/Claude-Niang/releases/tag/v1.3.3">版本更新</a> · <a href="#常见问题">常见问题</a> · <a href="https://github.com/Gryphus-Triune/Claude-Niang/issues/new/choose">反馈问题</a></p>
+  <p><a href="https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/download/v2.0.0/claude-niang-v2.0.0-windows.zip"><strong>下载 Windows 完整包</strong></a> · <a href="#下载与安装">安装说明</a> · <a href="https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/tag/v2.0.0">版本更新</a> · <a href="#常见问题">常见问题</a> · <a href="https://github.com/Cottins-Vanilla/Claude-Niang-Community/issues/new/choose">反馈问题</a></p>
 </div>
+
+> [!NOTE]
+> **这是社区维护版。** 本仓库 fork 自 [Gryphus-Triune/Claude-Niang](https://github.com/Gryphus-Triune/Claude-Niang)。原作者暂时联系不上，这里在 MIT 许可下继续修复问题、增加功能，并保留原作者和所有贡献者的署名。版本号从 **2.0.0** 起步，和原版 1.x 区分。与原版的关系见[社区版说明](#社区版说明)。
 
 <p align="center">
   <a href="docs/screenshot.png"><img src="docs/screenshot.png" alt="Claude 娘原生界面：角色上方的气泡显示 5 小时、每周剩余额度和重置时间；图中为示例数据" width="378"></a>
@@ -24,34 +27,36 @@
 |---|---|
 | 套餐与额度 | 查看套餐、5 小时额度、每周额度、分模型每周额度、额外用量和重置时间；以接口实际提供的窗口为准。 |
 | 数据时间与提醒 | 显示上次更新时间；手动读到新结果后判断低额度和重置提醒。 |
+| 账户总览与用量账本 | 右键 → 账户总览：各组织额度卡片、本机 Claude Code 用量走势；用量账本可筛选、看活动图和会话明细、导出 CSV / JSON，并按 API 公开价格估算参考费用。**2.0.0 新增。** |
 | 形象与语录 | 拖动、缩放角色，导入自己的图片，编辑语录和点击音效。 |
 | 音乐律动 | 在本机分析正在播放的声音，跟随节拍跳动；默认形象会戴上墨镜。 |
-| 账户总览与用量账本 | 右键 → 账户总览：各组织额度卡片、本机 Claude Code 用量走势；用量账本可筛选、看活动图和会话明细、导出 CSV / JSON，并按 API 公开价格估算参考费用。 |
 | Claude 对话扩展 | 询问本机保存的额度，明确说“刷新额度”时发起一次新读取。 |
 
 Free 或部分组织可能没有额度窗口；挂件无法提供接口没有返回的数据。今日观测统计是本机采样估算，不是完整账单、消息数或 token 数。
 
 ## 下载与安装
 
-**当前程序版本：1.3.3** · [版本说明](https://github.com/Gryphus-Triune/Claude-Niang/releases/tag/v1.3.3) · [完整更新记录](CHANGELOG.md)
+**当前程序版本：2.0.0** · [版本说明](https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/tag/v2.0.0) · [完整更新记录](CHANGELOG.md)
 
-本版修复登录切换后的旧额度、余额缓存、语录保存和限流等待问题。首次使用请选择 Windows 完整包；对话扩展为可选项。
+本版是社区版的第一个版本：新增「用量管理」窗口（账户总览和用量账本），并修复开机启动快捷方式被杀毒软件误报的问题。首次使用请选择 Windows 完整包；对话扩展为可选项。
 
 先准备好 **Claude 桌面端、Node.js LTS 和 WebView2**。安装器会检查依赖；挂件使用自己的登录窗口，与 Claude 桌面端的登录相互独立。
 
 | 你要做什么 | 选择哪个文件 |
 |---|---|
-| 首次安装或更新挂件 | **[claude-niang-v1.3.3-windows.zip](https://github.com/Gryphus-Triune/Claude-Niang/releases/download/v1.3.3/claude-niang-v1.3.3-windows.zip)**，包含挂件和可选桌面扩展。 |
-| 已有挂件，只更新 Claude 对话扩展 | [claude-niang-usage.mcpb](https://github.com/Gryphus-Triune/Claude-Niang/releases/download/v1.3.3/claude-niang-usage.mcpb)，也可在完整包的“Claude桌面扩展”文件夹找到。[扩展安装说明](#在-claude-对话里问额度) |
-| 核对下载文件是否完整 | [SHA-256 校验文件](https://github.com/Gryphus-Triune/Claude-Niang/releases/download/v1.3.3/claude-niang-v1.3.3-windows.zip.sha256)，普通安装无需打开。 |
+| 首次安装或更新挂件 | **[claude-niang-v2.0.0-windows.zip](https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/download/v2.0.0/claude-niang-v2.0.0-windows.zip)**，包含挂件和可选桌面扩展。 |
+| 已有挂件，只更新 Claude 对话扩展 | [claude-niang-usage.mcpb](https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/download/v2.0.0/claude-niang-usage.mcpb)，也可在完整包的“Claude桌面扩展”文件夹找到。[扩展安装说明](#在-claude-对话里问额度) |
+| 核对下载文件是否完整 | [SHA-256 校验文件](https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/download/v2.0.0/claude-niang-v2.0.0-windows.zip.sha256)，普通安装无需打开。 |
 | 阅读或参与开发 | 仓库源码或发布页的 `Source code`；这些归档不包含构建好的桌面扩展。 |
 
-1. 点击上方 **Windows 完整包** 下载，或从 [1.3.3 发布页](https://github.com/Gryphus-Triune/Claude-Niang/releases/tag/v1.3.3) 的 Assets 选择同名 ZIP。
+1. 点击上方 **Windows 完整包** 下载，或从 [2.0.0 发布页](https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/tag/v2.0.0) 的 Assets 选择同名 ZIP。
 2. **完整解压**到以后不会移动的文件夹，例如 `%LOCALAPPDATA%\Programs\Claude娘额度挂件`。不要在压缩包里直接运行。
 3. 双击 **安装Claude娘.cmd**，按提示检查依赖并在 Claude 娘自己的登录窗口中登录 claude.ai。安装不需要管理员权限。
 4. 打开 Claude 桌面端主窗口，点右下角的角色或 **↻**。气泡出现读取时间和账号提供的额度窗口，就完成了。
 
-安装器会登记当前用户的开机自启；计划任务不可用时改用“启动”文件夹。安装后移动文件夹，请按下方的“搬家”步骤重新登记。
+已经装了原版 Claude 娘（1.3.3 或更早）时，不用卸载，按[更新](#更新搬家与卸载)的步骤覆盖到原来的文件夹即可。
+
+安装器会登记当前用户的开机自启（计划任务）；只有计划任务不可用时，才改用“启动”文件夹里的快捷方式。安装后移动文件夹，请按下方的“搬家”步骤重新登记。
 
 <details>
 <summary>安装前需要准备什么</summary>
@@ -88,6 +93,7 @@ Windows 10、ARM64、微软商店版 Claude、多屏和混合 DPI 仍需更多�
 | 点角色 | 展开额度气泡并读取一次。同一组织 15 秒内的重复点击复用刚才的结果，同时发出的多个请求合并为一次读取。 |
 | 点气泡 | 下一页 → 语录 → 收起。 |
 | 点 ↻ 或右键“刷新额度” | 手动刷新额度。 |
+| 右键 → 账户总览 | 打开用量管理窗口，见[下文](#账户总览与用量账本)。 |
 | 右键 → Claude 账号 → 切换组织 | 读取选定组织，切换时先隐藏旧组织的额度。 |
 | 鼠标停在气泡上 | 查看组织、时间、金额和完整说明。 |
 
@@ -167,7 +173,7 @@ Windows 10、ARM64、微软商店版 Claude、多屏和混合 DPI 仍需更多�
 
 ## 更新、搬家与卸载
 
-**更新**：先运行“停用Claude娘.cmd”，将新版本覆盖到**同一个文件夹**，保留原有 `claude-niang\installation.json`，再运行“安装Claude娘.cmd”。设置和登录保存在程序文件夹之外。如果装过桌面扩展，再双击一次新的 `.mcpb` 更新。
+**更新**（包括从原版 1.x 更新到社区版）：先运行“停用Claude娘.cmd”，将新版本覆盖到**同一个文件夹**，保留原有 `claude-niang\installation.json`，再运行“安装Claude娘.cmd”。设置和登录保存在程序文件夹之外，会继续使用。如果装过桌面扩展，再双击一次新的 `.mcpb` 更新。
 
 **搬家**：先运行“停用Claude娘.cmd”，再把整个文件夹移到新位置并重新安装。避免同时保留两个已安装的副本，它们会争用同一份开机启动登记。
 
@@ -191,6 +197,8 @@ claude.ai 的网页接口不是公开 API，随时可能变化而失效。请遵
 | 挂件没有出现 | 打开 Claude 主窗口、取消最小化，再双击“打开Claude娘.cmd”。 |
 | 没有额度数字 | 在挂件里登录，再点角色或 ↻。Free 等套餐没有额度窗口时会有说明。 |
 | 显示的账号或额度与桌面端不同 | 检查挂件自己的登录账号和右键菜单中的组织。两边登录相互独立。 |
+| 杀毒软件把“启动”文件夹里的 Claude Niang 快捷方式报成木马（如 TrojanDownloader/LNK.Agent） | 这是按外形的误报。2.0.0 起计划任务正常时不再创建这个快捷方式；更新后运行一次“安装Claude娘.cmd”或“打开Claude娘.cmd”，会移除本安装位置留下的旧快捷方式。 |
+| 用量管理里没有本机用量 | 这台电脑需要用过 Claude Code。会话记录不在默认位置时，检查 `CLAUDE_CONFIG_DIR` 环境变量。 |
 | 内置浏览器组件检查失败 | 重新运行“安装Claude娘.cmd”；仍失败时检查 WebView2 运行时。 |
 | 提示“已连续失败 3 次” | 等待提示的秒数后再点 ↻，并检查网络、验证或登录状态。 |
 | 已限流 | 按提示等待后手动刷新，程序不会定时重试。 |
@@ -201,16 +209,42 @@ claude.ai 的网页接口不是公开 API，随时可能变化而失效。请遵
 | 旧版开机后出现空白 PowerShell 窗口 | 更新后双击一次“打开Claude娘.cmd”，重新登记隐藏启动。 |
 | 挂件消失、读取持续失败或音乐律动停止 | 查看 `%LOCALAPPDATA%\ClaudeNiang\state\logs\claude-niang.log`。 |
 
-仍有问题，请[提交反馈](https://github.com/Gryphus-Triune/Claude-Niang/issues/new/choose)，附上挂件版本、Windows 与 Node.js 版本、复现步骤及错误提示。发布日志前请去掉用户名、个人路径、邮箱和组织信息，勿上传 Cookie、登录文件或浏览器配置目录。
+仍有问题，请[提交反馈](https://github.com/Cottins-Vanilla/Claude-Niang-Community/issues/new/choose)，附上挂件版本、Windows 与 Node.js 版本、复现步骤及错误提示。发布日志前请去掉用户名、个人路径、邮箱和组织信息，勿上传 Cookie、登录文件或浏览器配置目录。
+
+## 社区版说明
+
+- **来源**：fork 自 [Gryphus-Triune/Claude-Niang](https://github.com/Gryphus-Triune/Claude-Niang) 的 1.3.3，保留完整的提交历史和原作者署名。原作者暂时联系不上，社区版在 MIT 许可下继续维护。
+- **功能**：2.0.0 包含原版 1.3.3 的全部功能，另外新增用量管理窗口，并修复启动快捷方式被误报的问题。详见 [更新记录](CHANGELOG.md)。
+- **与原版共用数据**：社区版和原版使用同一个数据目录（`%LOCALAPPDATA%\ClaudeNiang`）和同一份开机启动登记，所以从原版更新后，设置和登录会继续使用。也因为这样，**不要同时安装原版和社区版**。
+- **旧版本下载**：1.3.3 及更早的版本在[原仓库的发布页](https://github.com/Gryphus-Triune/Claude-Niang/releases)。
+- **反馈**：社区版的问题请在[本仓库](https://github.com/Cottins-Vanilla/Claude-Niang-Community/issues/new/choose)反馈，不要提到原仓库。
+
+## 版本号
+
+格式为 `X.Y.Z`：
+
+- **X**：正式版号，基本不变。社区版从 2 开始。
+- **Y**：新增功能或较大改动时递增，Z 归零。
+- **Z**：修复问题、日常维护时递增。
+
+一个版本里同时有新功能和修复时，按新功能算（Y 递增）。每个版本只对应一个 `vX.Y.Z` 标签和一个 Release，已经公开的版本不会覆盖。
 
 ## 开发与贡献
 
-测试、构建和干净打包的方法见 [CONTRIBUTING.md](CONTRIBUTING.md)。工作流配置在 `.github/workflows/ci.yml`；实际运行结果以 [GitHub Actions](https://github.com/Gryphus-Triune/Claude-Niang/actions) 为准。
+测试、构建、提交检查和发布方法见 [CONTRIBUTING.md](CONTRIBUTING.md)。克隆后先运行一次 `git config core.hooksPath .githooks`，启用提交前检查：它会拦下临时文件、本机路径、私人邮箱和常见令牌。工作流配置在 `.github/workflows/`；实际运行结果以 [GitHub Actions](https://github.com/Cottins-Vanilla/Claude-Niang-Community/actions) 为准。
+
+`.claude/skills/` 里是本仓库的维护规范，写给 Claude Code 用，人工维护时同样适用：
+
+| 规范 | 内容 |
+|---|---|
+| [release-version](.claude/skills/release-version/SKILL.md) | 版本号怎么定 |
+| [release-page](.claude/skills/release-page/SKILL.md) | 发布页（CHANGELOG 版本章节）的格式和发布步骤 |
+| [commit-hygiene](.claude/skills/commit-hygiene/SKILL.md) | 提交和推送不带临时文件和个人信息 |
 
 ## 许可与致谢
 
-基于 [GPT 娘 1.3.5](https://github.com/T7moris/GPT-Niang)（MIT）改写，借鉴了[小鲸鱼余额挂件](https://github.com/MeteorNOX/DeepSeek-Balance-Whale-Widget)的提醒与记账思路；账户总览的版面参考了 [Codex-DragonGirl](https://github.com/InhamiRei/Codex-DragonGirl) 的账户总览，按 Claude 的数据重新实现，没有使用它的代码。内置语录中有 7 句来自该项目，来源与许可见 [语录许可说明](claude-niang/assets/quotes-LICENSE.txt)。
+本项目基于原作者 Gryphus-Triune 的 [Claude-Niang](https://github.com/Gryphus-Triune/Claude-Niang)（MIT），社区版在此基础上继续维护。Claude-Niang 改写自 [GPT 娘 1.3.5](https://github.com/T7moris/GPT-Niang)（MIT），借鉴了[小鲸鱼余额挂件](https://github.com/MeteorNOX/DeepSeek-Balance-Whale-Widget)的提醒与记账思路；账户总览的版面参考了 [Codex-DragonGirl](https://github.com/InhamiRei/Codex-DragonGirl) 的账户总览，按 Claude 的数据重新实现，没有使用它的代码。内置语录中有 7 句来自小鲸鱼余额挂件，来源与许可见 [语录许可说明](claude-niang/assets/quotes-LICENSE.txt)。
 
-源代码、内置语录和点击音效遵循 [MIT License](LICENSE)，保留 GPT 娘原作者和贡献者的署名。默认形象图片（`claude-niang/assets/claude-niang.png`）和由它做成的扩展图标版权归仓库作者所有，不在 MIT 许可范围内。WebView2 文件遵循微软自己的许可，见 `claude-niang/runtime/webview2/LICENSE.txt` 与 `NOTICE.txt`。
+源代码、内置语录和点击音效遵循 [MIT License](LICENSE)，保留 GPT 娘、Claude-Niang 原作者和所有贡献者的署名。默认形象图片（`claude-niang/assets/claude-niang.png`）和由它做成的扩展图标版权归原 Claude-Niang 仓库作者所有，不在 MIT 许可范围内；社区版原样沿用，如权利人要求，会替换或移除。WebView2 文件遵循微软自己的许可，见 `claude-niang/runtime/webview2/LICENSE.txt` 与 `NOTICE.txt`。
 
 Claude 是 Anthropic 的商标。本项目与 Anthropic 没有关联。
