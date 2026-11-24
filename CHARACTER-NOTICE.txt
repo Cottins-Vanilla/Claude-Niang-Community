@@ -1,0 +1,14 @@
+Claude 娘角色图片使用说明
+
+Copyright (c) 2026 Gryphus-Triune. All rights reserved.
+
+Gryphus-Triune 原创了 Claude 娘的默认角色图。本说明适用于默认立绘
+（claude-niang/assets/claude-niang.png）、由该图制作的桌面扩展图标
+（claude-niang/extension/icon.png，独立扩展内为 icon.png），以及项目
+文档和截图中呈现的该角色图像。
+
+上述图片可随 Claude 娘的官方源码、Windows 安装包或桌面扩展下载，
+并在使用本项目时加载和展示。另行转载、再分发、改作、用于其他项目
+或用于商业用途，须取得 Gryphus-Triune 的另行许可。
+
+角色图片适用本说明，项目代码的 MIT 许可不授予角色图片的使用权。

@@ -12,7 +12,7 @@
 </div>
 
 > [!NOTE]
-> **这是社区维护版。** 本仓库 fork 自 [Gryphus-Triune/Claude-Niang](https://github.com/Gryphus-Triune/Claude-Niang)。原作者暂时联系不上，这里在 MIT 许可下继续修复问题、增加功能，并保留原作者和所有贡献者的署名。版本号从 **2.0.0** 起步，和原版 1.x 区分。与原版的关系见[社区版说明](#社区版说明)。
+> **这是社区维护版。** 本仓库 fork 自 [The-Scales-of-Themis/Claude-Niang](https://github.com/The-Scales-of-Themis/Claude-Niang)（原 Gryphus-Triune/Claude-Niang）。原仓库停在 1.3.3，并已在首页注明后续版本在这里发布；社区版继续修复问题、增加功能，并保留原作者和所有贡献者的署名。版本号从 **2.0.0** 起步，和原版 1.x 区分。与原版的关系见[社区版说明](#社区版说明)。
 
 <p align="center">
   <a href="docs/screenshot.png"><img src="docs/screenshot.png" alt="Claude 娘原生界面：角色上方的气泡显示 5 小时、每周剩余额度和重置时间；图中为示例数据" width="378"></a>
@@ -20,6 +20,33 @@
 <p align="center"><sub>原生界面预览，图中为示例数据。额度来自最近一次手动读取；点击图片可查看原图。</sub></p>
 
 **由你决定何时读取。** 启动、恢复窗口、登录完成和自动语录都不会查询额度。读取本身不调用模型，无需 API Key；音乐只在本机分析，不保存也不上传。**非 Anthropic 官方产品。**
+
+## 最新版本：社区维护版
+
+| | 本仓库（原版） | 社区维护版 |
+|---|---|---|
+| 仓库 | The-Scales-of-Themis/Claude-Niang（原 Gryphus-Triune/Claude-Niang） | [Cottins-Vanilla/Claude-Niang-Community](https://github.com/Cottins-Vanilla/Claude-Niang-Community) |
+| 最新版本 | 1.3.3（2026-10-29），不再更新 | **2.0.0**（2026-11-24），后续版本都在这里发布 |
+| 下载 | 下文「下载与安装」（旧版） | [Releases 最新版](https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/latest) |
+| 问题反馈 | 新问题请提交到社区维护版 | [提交反馈](https://github.com/Cottins-Vanilla/Claude-Niang-Community/issues/new/choose) |
+
+**2.0.0 相比 1.3.3 的主要变化**
+
+- **新增「用量管理」窗口**（右键角色 → 账户总览）：
+  - 账户总览：每个组织一张额度卡片，本机 Claude Code 今日用量、会话、缓存命中和参考费用，最近 14 天走势。
+  - 用量账本：按时间、模型、项目、来源、速度、入口筛选；Token 活动图和全年热力图；模型和项目分布；会话明细可搜索，可导出 CSV / JSON。
+  - 参考费用按 Claude API 公开价格估算，订阅不按 Token 计费，仅供参考。只读取本机 Claude Code 会话记录里的 Tokens 数字，不读取对话内容。
+- **修复杀毒软件误报**：计划任务正常时不再在「启动」文件夹创建快捷方式，并移除本安装位置留下的旧快捷方式。这个快捷方式会被部分杀毒软件按外形误报为 LNK 木马下载器（如 TrojanDownloader/LNK.Agent）。
+- 其余功能和 1.3.3 相同。完整更新记录见社区维护版的 [CHANGELOG](https://github.com/Cottins-Vanilla/Claude-Niang-Community/blob/main/CHANGELOG.md)。
+
+**从 1.3.3 升级到社区维护版**
+
+1. 运行旧安装目录里的「停用Claude娘.cmd」。
+2. 从[社区维护版 Releases](https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/latest) 下载 Windows 完整包，**覆盖到原来的同一个文件夹**，保留 `claude-niang\installation.json`。
+3. 运行「安装Claude娘.cmd」。设置和登录保存在 `%LOCALAPPDATA%\ClaudeNiang`，升级后继续使用。
+4. 装过 Claude 桌面扩展的，再双击一次新版的 `.mcpb`。
+
+两个版本使用同一个数据目录和同一份开机启动登记，**不要同时安装原版和社区维护版**。
 
 ## 可以做什么
 
@@ -213,10 +240,10 @@ claude.ai 的网页接口不是公开 API，随时可能变化而失效。请遵
 
 ## 社区版说明
 
-- **来源**：fork 自 [Gryphus-Triune/Claude-Niang](https://github.com/Gryphus-Triune/Claude-Niang) 的 1.3.3，保留完整的提交历史和原作者署名。原作者暂时联系不上，社区版在 MIT 许可下继续维护。
+- **来源**：fork 自 [The-Scales-of-Themis/Claude-Niang](https://github.com/The-Scales-of-Themis/Claude-Niang)（原 Gryphus-Triune/Claude-Niang）的 1.3.3，保留完整的提交历史和原作者署名。原仓库停在 1.3.3，首页已注明后续版本在社区维护版发布。
 - **功能**：2.0.0 包含原版 1.3.3 的全部功能，另外新增用量管理窗口，并修复启动快捷方式被误报的问题。详见 [更新记录](CHANGELOG.md)。
 - **与原版共用数据**：社区版和原版使用同一个数据目录（`%LOCALAPPDATA%\ClaudeNiang`）和同一份开机启动登记，所以从原版更新后，设置和登录会继续使用。也因为这样，**不要同时安装原版和社区版**。
-- **旧版本下载**：1.3.3 及更早的版本在[原仓库的发布页](https://github.com/Gryphus-Triune/Claude-Niang/releases)。
+- **旧版本下载**：1.3.3 及更早的版本在[原仓库的发布页](https://github.com/The-Scales-of-Themis/Claude-Niang/releases)。
 - **反馈**：社区版的问题请在[本仓库](https://github.com/Cottins-Vanilla/Claude-Niang-Community/issues/new/choose)反馈，不要提到原仓库。
 
 ## 版本号
@@ -241,10 +268,25 @@ claude.ai 的网页接口不是公开 API，随时可能变化而失效。请遵
 | [release-page](.claude/skills/release-page/SKILL.md) | 发布页（CHANGELOG 版本章节）的格式和发布步骤 |
 | [commit-hygiene](.claude/skills/commit-hygiene/SKILL.md) | 提交和推送不带临时文件和个人信息 |
 
+## 项目来源与 Claude 适配
+
+Claude 娘基于 T7moris 与贡献者的 GPT-Niang 1.3.5 Windows 版开发，由 Gryphus-Triune 完成 Claude 适配并维护到 1.3.3；2.0.0 起由社区维护版继续开发。 [GPT-Niang 原仓库](https://github.com/T7moris/GPT-Niang)
+
+Gryphus-Triune 的 Claude 适配包括：
+
+- 适配 Claude 桌面窗口的挂件定位与显隐，增加独立的 claude.ai 登录窗口和组织切换。
+- 改为手动读取 Claude 套餐、5 小时与每周额度、分模型额度和重置时间，并单独显示额外用量与预付余额的读取状态。
+- 增加低额度与重置提醒，按组织记录本机今日观测到的用量变化。
+- 提供可选的 Claude 桌面扩展，在对话里查看本机额度快照，或明确请求刷新。
+
 ## 许可与致谢
 
-本项目基于原作者 Gryphus-Triune 的 [Claude-Niang](https://github.com/Gryphus-Triune/Claude-Niang)（MIT），社区版在此基础上继续维护。Claude-Niang 改写自 [GPT 娘 1.3.5](https://github.com/T7moris/GPT-Niang)（MIT），借鉴了[小鲸鱼余额挂件](https://github.com/MeteorNOX/DeepSeek-Balance-Whale-Widget)的提醒与记账思路；账户总览的版面参考了 [Codex-DragonGirl](https://github.com/InhamiRei/Codex-DragonGirl) 的账户总览，按 Claude 的数据重新实现，没有使用它的代码。内置语录中有 7 句来自小鲸鱼余额挂件，来源与许可见 [语录许可说明](claude-niang/assets/quotes-LICENSE.txt)。
+本项目基于原作者 Gryphus-Triune 的 [Claude-Niang](https://github.com/The-Scales-of-Themis/Claude-Niang)（MIT），社区版在此基础上继续维护。Claude-Niang 改写自 [GPT 娘 1.3.5](https://github.com/T7moris/GPT-Niang)（MIT），借鉴了[小鲸鱼余额挂件](https://github.com/MeteorNOX/DeepSeek-Balance-Whale-Widget)的提醒与记账思路；账户总览的版面参考了 [Codex-DragonGirl](https://github.com/InhamiRei/Codex-DragonGirl) 的账户总览，按 Claude 的数据重新实现，没有使用它的代码。内置语录中有 7 句来自小鲸鱼余额挂件，来源与许可见 [语录许可说明](claude-niang/assets/quotes-LICENSE.txt)。
 
-源代码、内置语录和点击音效遵循 [MIT License](LICENSE)，保留 GPT 娘、Claude-Niang 原作者和所有贡献者的署名。默认形象图片（`claude-niang/assets/claude-niang.png`）和由它做成的扩展图标版权归原 Claude-Niang 仓库作者所有，不在 MIT 许可范围内；社区版原样沿用，如权利人要求，会替换或移除。WebView2 文件遵循微软自己的许可，见 `claude-niang/runtime/webview2/LICENSE.txt` 与 `NOTICE.txt`。
+代码、配套文档、项目自写语录及点击音效采用 [MIT 许可](LICENSE)。许可文件保留 T7moris 和 GPT-Niang contributors 的原版权声明，Claude 适配及新增代码署名为 Gryphus-Triune，社区版的改动署名为 Claude-Niang contributors。
+
+默认角色图由 Gryphus-Triune 原创，桌面扩展图标由该图制作。角色图及衍生图标不在 MIT 许可范围内，使用范围见 [角色图片使用说明](CHARACTER-NOTICE.txt)。
+
+随包分发的 WebView2 SDK 文件遵循微软的许可并保留第三方声明，见 [WebView2 许可](claude-niang/runtime/webview2/LICENSE.txt) 与 [WebView2 第三方声明](claude-niang/runtime/webview2/NOTICE.txt)。
 
 Claude 是 Anthropic 的商标。本项目与 Anthropic 没有关联。

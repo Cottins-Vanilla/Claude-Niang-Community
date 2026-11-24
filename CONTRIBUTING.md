@@ -2,7 +2,7 @@
 
 使用 Node.js 20 或更新（建议官网 LTS 版）和 Windows PowerShell 5.1。运行测试不需要登录 Claude，也不会访问真实 Claude 账号。
 
-本仓库是 [Gryphus-Triune/Claude-Niang](https://github.com/Gryphus-Triune/Claude-Niang) 的社区维护版。维护规范放在 `.claude/skills/`：[版本号](.claude/skills/release-version/SKILL.md)、[发布页格式与发布步骤](.claude/skills/release-page/SKILL.md)、[提交与推送检查](.claude/skills/commit-hygiene/SKILL.md)。用 Claude Code 维护时会自动按这些规范做，人工维护时同样适用。
+本仓库是 [The-Scales-of-Themis/Claude-Niang](https://github.com/The-Scales-of-Themis/Claude-Niang)（原 Gryphus-Triune/Claude-Niang）的社区维护版。维护规范放在 `.claude/skills/`：[版本号](.claude/skills/release-version/SKILL.md)、[发布页格式与发布步骤](.claude/skills/release-page/SKILL.md)、[提交与推送检查](.claude/skills/commit-hygiene/SKILL.md)。用 Claude Code 维护时会自动按这些规范做，人工维护时同样适用。
 
 ## 克隆后先做
 
@@ -63,7 +63,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\build-release.ps1
 
 ## 扩展与资源
 
-`claude-niang/runtime/mcp.mjs` 是 MCP 服务源码，和后台共享 `runtime/shared.mjs`。构建会将这两个文件复制进扩展的 `server/`，把根目录 `LICENSE` 复制进扩展，并从 `package.json` 同步扩展版本。扩展运行时读取 manifest 的版本；`shared.mjs` 不应引用扩展中不存在的本地模块。
+`claude-niang/runtime/mcp.mjs` 是 MCP 服务源码，和后台共享 `runtime/shared.mjs`。构建会将这两个文件复制进扩展的 `server/`，把根目录的 `LICENSE` 和 `CHARACTER-NOTICE.txt` 复制进扩展，并从 `package.json` 同步扩展版本。扩展运行时读取 manifest 的版本；`shared.mjs` 不应引用扩展中不存在的本地模块。
 
 默认形象、墨镜标定和资源维护见 [自定义资源说明](docs/customization.md)。内置语录的上游署名和许可见 `claude-niang/assets/quotes-LICENSE.txt`，发布包必须保留该文件。文档中的界面预览使用示例数据；添加效果展示时，说明它是实机截图、离线渲染还是示意图，并去除真实账号信息。
 

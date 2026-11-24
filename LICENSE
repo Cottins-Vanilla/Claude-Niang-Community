@@ -2,6 +2,7 @@ MIT License
 
 Copyright (c) 2026 T7moris
 Copyright (c) 2026 GPT-Niang contributors
+Copyright (c) 2026 Gryphus-Triune (Claude-Niang adaptations and additions)
 Copyright (c) 2026 Claude娘额度挂件 (Claude-Niang) contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,18 +23,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-Claude娘 is a modified version of GPT-Niang (https://github.com/T7moris/GPT-Niang)
-for the Claude desktop app. No GPT-Niang character image is included. The click sounds and bundled quotes are covered by this license. Seven bundled
-quotes also retain the upstream copyright and MIT notice in
-claude-niang/assets/quotes-LICENSE.txt.
+Scope: this MIT license applies to the source code, documentation, bundled
+click sounds and Claude-Niang's own bundled quotes. The seven MeteorNOX
+quotes retain their MIT notice in claude-niang/assets/quotes-LICENSE.txt.
 
-The default character image (claude-niang/assets/claude-niang.png) and the
-extension icon made from it (claude-niang/extension/icon.png) are (c) the owner
-of the original Claude-Niang repository (https://github.com/Gryphus-Triune/Claude-Niang)
-and are not covered by this license. The community fork keeps them unchanged
-and will replace or remove them if the copyright holder asks. Images that you import into
-the widget remain yours.
-
-Third-party files: claude-niang/runtime/webview2/ contains the Microsoft Edge
-WebView2 SDK runtime files, redistributed under their own license
-(claude-niang/runtime/webview2/LICENSE.txt).
+The original character artwork and its derived icon are covered by
+CHARACTER-NOTICE.txt. The Microsoft Edge WebView2 SDK files retain their
+own license and notices in claude-niang/runtime/webview2/.

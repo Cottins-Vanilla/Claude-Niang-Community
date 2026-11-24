@@ -4,6 +4,12 @@
 
 2.0.0 起是社区维护版（[Cottins-Vanilla/Claude-Niang-Community](https://github.com/Cottins-Vanilla/Claude-Niang-Community)）。1.3.3 及更早的版本由原作者发布，下载链接指向原仓库 [Gryphus-Triune/Claude-Niang](https://github.com/Gryphus-Triune/Claude-Niang)。
 
+## 未发布
+
+### 其他
+- 同步原作者对许可与署名的整理：新增 `CHARACTER-NOTICE.txt`（默认角色图及衍生图标的使用说明），LICENSE 增加 Gryphus-Triune 对 Claude 适配部分的署名，相关源码文件加上版权行，桌面扩展作者改为 Gryphus-Triune；发布包和桌面扩展都附带角色图片使用说明。
+- 原仓库已迁到 The-Scales-of-Themis/Claude-Niang，README 中的链接和社区版说明随之更新。
+
 ## 2.0.0 — 2026-11-24
 
 社区维护版的第一个版本：新增「用量管理」窗口（账户总览和用量账本），并修复开机启动快捷方式被杀毒软件误报的问题。

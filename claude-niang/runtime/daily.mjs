@@ -1,3 +1,4 @@
+// Copyright (c) 2026 Gryphus-Triune (Claude-Niang adaptations and additions)
 import path from 'node:path';
 import {atomicJson} from './claude-usage.mjs';
 import {readJson,localDay} from './shared.mjs';

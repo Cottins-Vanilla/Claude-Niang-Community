@@ -4,7 +4,7 @@ import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 
-const rootFiles=['README.md','LICENSE','CHANGELOG.md','CONTRIBUTING.md','.gitignore','.gitattributes','build-release.ps1',
+const rootFiles=['README.md','LICENSE','CHARACTER-NOTICE.txt','CHANGELOG.md','CONTRIBUTING.md','.gitignore','.gitattributes','build-release.ps1',
   '安装Claude娘.cmd','打开Claude娘.cmd','登录Claude账号.cmd','检测套餐.cmd','停用Claude娘.cmd','tools/release.mjs','tools/commit-hygiene.mjs','tools/quote-layouts.ps1',
   'docs/screenshot.png','docs/images/quota-preview.png','docs/customization.md','claude-niang/assets/quotes-LICENSE.txt','.github/workflows/ci.yml'];
 function safeRelative(value){
@@ -25,9 +25,8 @@ export function releaseFiles(root){
   const required=JSON.parse(fs.readFileSync(path.join(app,'runtime','install-files.json'),'utf8').replace(/^\uFEFF/,''));
   if(!Array.isArray(required) || required.length<10)throw new Error('Invalid install manifest');
   // Only listed files are released, so installation records, logs and account
-  // data in a working copy never reach a package. The extension's server files and
-  // LICENSE are generated below from runtime/mcp.mjs, runtime/shared.mjs and the
-  // root LICENSE.
+  // data in a working copy never reach a package. The extension's server files
+  // and license notices are copied into its directory during staging.
   const files=[...rootFiles,...required.map(value=>'claude-niang/'+safeRelative(value)),
     'claude-niang/extension/manifest.json','claude-niang/extension/icon.png'];
   for(const file of walk(path.join(app,'tests')))files.push(path.relative(root,file).split(path.sep).join('/'));
@@ -54,9 +53,10 @@ export function createReleaseTree(root,output){
   fs.copyFileSync(path.join(app,'runtime','mcp.mjs'),path.join(app,'extension','server','index.mjs'));
   fs.copyFileSync(path.join(app,'runtime','shared.mjs'),path.join(app,'extension','server','shared.mjs'));
   fs.copyFileSync(path.join(output,'LICENSE'),path.join(app,'extension','LICENSE'));
+  fs.copyFileSync(path.join(output,'CHARACTER-NOTICE.txt'),path.join(app,'extension','CHARACTER-NOTICE.txt'));
   const info={name:packageInfo.name,version:packageInfo.version,refreshMode:'manual',platforms:['win32'],containsUserState:false};
   fs.writeFileSync(path.join(output,'release-info.json'),JSON.stringify(info,null,2)+'\n');
-  return {...info,files:files.length+3,output};
+  return {...info,files:files.length+4,output};
 }
 const stableVersion=/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 const sha256=data=>createHash('sha256').update(data).digest('hex');

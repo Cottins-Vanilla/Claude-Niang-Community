@@ -1,4 +1,5 @@
-﻿# Claude 专属功能：登录窗口、手动读取、额度分页、低额度/重置提醒、
+﻿# Copyright (c) 2026 Gryphus-Triune (Claude-Niang adaptations and additions)
+# Claude 专属功能：登录窗口、手动读取、额度分页、低额度/重置提醒、
 # 今日已用与本周节奏（借鉴小鲸鱼记账）。界面仍沿用 GPT 娘的气泡与两行额度布局。
 $script:quotaPage=0
 $script:preferredOrg=$null
