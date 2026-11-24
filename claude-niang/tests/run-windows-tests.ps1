@@ -593,7 +593,14 @@ public static class CnLaunchWindows{
   $resolved=[IO.Path]::GetFullPath($scratch)
   if($resolved.StartsWith($tempBase+'\',[StringComparison]::OrdinalIgnoreCase) -and [IO.Path]::GetFileName($resolved)-match '^cn-windows-[a-f0-9]{32}$'){
     # Keep failure evidence in the isolated temp directory; clean only success.
-    if($summary.failed-eq 0){Remove-Item -LiteralPath $resolved -Recurse -Force}else{Write-Host ('Failure details: '+$resolved)}
+    if($summary.failed-eq 0){
+      # WebView2 browser processes can keep their profile lock for a moment after
+      # the window host has exited, so retry briefly; leftover temp files are not a test failure.
+      for($try=1;;$try++){
+        try{Remove-Item -LiteralPath $resolved -Recurse -Force -ErrorAction Stop;break}
+        catch{if($try-ge 20){Write-Warning ('Temp folder still in use, left for later cleanup: '+$resolved);break};Start-Sleep -Milliseconds 500}
+      }
+    }else{Write-Host ('Failure details: '+$resolved)}
   }
 }
 if($summary.failed){exit 1}

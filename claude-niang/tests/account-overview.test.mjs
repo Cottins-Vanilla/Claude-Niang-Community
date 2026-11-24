@@ -74,8 +74,8 @@ test('the command writes the index only when something changed',t=>{
   const second=refreshLocalUsage(data,{root,now:NOW+1000});
   assert.equal(second.changed,false);assert.equal(fs.statSync(file).mtimeMs,mtime,'unchanged index rewritten');
   assert.doesNotMatch(fs.readFileSync(file,'utf8'),/SECRET/);
-  assert.equal(claudeProjectsDir({USERPROFILE:'C:\\Users\\a'}),path.join('C:\\Users\\a','.claude','projects'));
-  assert.equal(claudeProjectsDir({USERPROFILE:'C:\\Users\\a',CLAUDE_CONFIG_DIR:'D:\\cc'}),path.join('D:\\cc','projects'));
+  assert.equal(claudeProjectsDir({USERPROFILE:'C:\\Users\\example'}),path.join('C:\\Users\\example','.claude','projects'));
+  assert.equal(claudeProjectsDir({USERPROFILE:'C:\\Users\\example',CLAUDE_CONFIG_DIR:'D:\\cc'}),path.join('D:\\cc','projects'));
 });
 
 // --- pricing ---------------------------------------------------------------------------

@@ -14,6 +14,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
+      - name: No temporary files or personal details in tracked files
+        run: node tools/commit-hygiene.mjs --all
       - name: Node tests
         working-directory: claude-niang
         run: npm test

@@ -1,0 +1,5 @@
+#!/bin/sh
+# Keeps temporary files and personal details out of commits.
+# Rules: .claude/skills/commit-hygiene/SKILL.md
+command -v node >/dev/null 2>&1 || { echo "commit-hygiene: 需要 Node.js 才能检查提交" >&2; exit 1; }
+exec node "$(git rev-parse --show-toplevel)/tools/commit-hygiene.mjs" --staged

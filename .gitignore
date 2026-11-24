@@ -23,3 +23,10 @@ Thumbs.db
 .DS_Store
 **/claude-niang-launcher.exe
 **/claude-niang-launcher.exe.*
+
+# Local Claude Code settings, memory and scratch files; only project skills are shared
+.claude/*
+!.claude/skills/
+tmp/
+temp/
+*.log

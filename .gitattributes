@@ -8,3 +8,4 @@
 *.wav binary
 *.dll binary
 *.mcpb binary
+.githooks/* text eol=lf
