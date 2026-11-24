@@ -47,9 +47,10 @@ try{
   Stop-WidgetSupervisorTask -AppDir $appDir -Configuration ([pscustomobject]$config)
   Stop-WidgetGui -AppDir $appDir -DataDir $config.dataDir
   Write-WidgetSupervisorJson (Join-Path $appDir 'installation.json') $config
-  Set-WidgetStartupShortcut $config.startupShortcut $appDir
-  Note ('启动文件夹快捷方式：'+$config.startupShortcut)
   $task=Register-WidgetSupervisorTask -AppDir $appDir
+  # The Startup shortcut is only the fallback for a failed task registration.
+  $startup=Sync-WidgetStartupShortcut $config.startupShortcut $appDir ([bool]$task.TaskRegistered)
+  Note ('启动文件夹快捷方式：'+$startup+'  '+$config.startupShortcut)
   $launch=Resolve-WidgetSupervisorLaunch $appDir
   Note ('启动方式：'+$launch.Kind+'  '+$launch.Execute)
   if($launch.Kind-eq 'headless'){Say '系统不允许运行本地编译的启动程序，已改用 Windows 自带的 conhost 隐藏启动（不影响使用）。' 'DarkYellow';Note ('原因：'+$launch.Reason)}

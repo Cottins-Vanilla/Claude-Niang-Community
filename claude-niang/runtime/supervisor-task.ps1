@@ -98,10 +98,10 @@ function Test-WidgetStartupShortcutIdentity {
   return [bool](Get-WidgetSupervisorCommandKind ([string]$Shortcut.TargetPath) ([string]$Shortcut.Arguments) $AppDir)
 }
 
-# The Startup shortcut is an independent fallback if the scheduled task cannot
-# run, so it always uses conhost.exe --headless: should policy start blocking the
-# launcher after installation, the shortcut still starts the supervisor at sign-in
-# (the task's copy and this one share a mutex, so only one keeps running).
+# The Startup shortcut is the fallback when the scheduled task cannot be
+# registered. It uses conhost.exe --headless so that it works even if policy
+# blocks the launcher (the task's copy and this one share a mutex, so only one
+# keeps running).
 function Set-WidgetStartupShortcut([string]$Path,[string]$AppDir){
   $link=(New-Object -ComObject WScript.Shell).CreateShortcut($Path)
   $link.TargetPath=Join-Path $env:WINDIR 'System32\conhost.exe'
@@ -110,6 +110,27 @@ function Set-WidgetStartupShortcut([string]$Path,[string]$AppDir){
   $link.WindowStyle=7
   $link.Description='Claude娘：Claude 桌面端额度挂件'
   $link.Save()
+}
+
+# Keep the Startup shortcut only while it is needed. Antivirus heuristics flag a
+# Startup shortcut that starts a hidden PowerShell with ExecutionPolicy Bypass
+# (it looks like an LNK downloader), so with a working scheduled task this
+# installation's shortcut is removed; without one it is (re)created. A shortcut
+# that belongs to another installation folder is never touched.
+# Returns 'removed', 'created', 'kept-foreign' or 'none'.
+function Sync-WidgetStartupShortcut([string]$Path,[string]$AppDir,[bool]$TaskRegistered){
+  if(!$Path){return 'none'}
+  $exists=Test-Path -LiteralPath $Path
+  if($exists){
+    $link=(New-Object -ComObject WScript.Shell).CreateShortcut($Path)
+    if(!(Test-WidgetStartupShortcutIdentity -Shortcut $link -AppDir $AppDir)){return 'kept-foreign'}
+  }
+  if($TaskRegistered){
+    if($exists){Remove-Item -LiteralPath $Path -Force;return 'removed'}
+    return 'none'
+  }
+  Set-WidgetStartupShortcut $Path $AppDir
+  return 'created'
 }
 
 function Stop-WidgetGui {

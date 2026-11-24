@@ -433,6 +433,26 @@ public static class CnLaunchWindows{
     $link=(New-Object -ComObject WScript.Shell).CreateShortcut($lnk)
     Assert ((Get-WidgetSupervisorCommandKind $link.TargetPath $link.Arguments $app)-eq 'headless') ('Shortcut form: '+$link.TargetPath+' '+$link.Arguments)
   }
+  Case 'The Startup shortcut exists only while the scheduled task is missing, and a foreign one is never touched' {
+    . (Join-Path $appDir 'runtime\supervisor-task.ps1')
+    $lnk=Join-Path $scratch 'sync-test.lnk';$app=Join-Path $scratch 'Sync App';$other=Join-Path $scratch 'Other App'
+    Assert ((Sync-WidgetStartupShortcut $lnk $app $false)-eq 'created') 'No fallback without a task'
+    $link=(New-Object -ComObject WScript.Shell).CreateShortcut($lnk)
+    Assert ((Get-WidgetSupervisorCommandKind $link.TargetPath $link.Arguments $app)-eq 'headless') 'Fallback shortcut has the wrong form'
+    Assert ((Sync-WidgetStartupShortcut $lnk $app $true)-eq 'removed') 'Shortcut kept although the task works'
+    Assert (!(Test-Path -LiteralPath $lnk)) 'Shortcut file still there'
+    Assert ((Sync-WidgetStartupShortcut $lnk $app $true)-eq 'none') 'Nothing to remove should be a no-op'
+    Set-WidgetStartupShortcut $lnk $other
+    Assert ((Sync-WidgetStartupShortcut $lnk $app $true)-eq 'kept-foreign') 'Another installation''s shortcut was removed'
+    Assert ((Sync-WidgetStartupShortcut $lnk $app $false)-eq 'kept-foreign') 'Another installation''s shortcut was replaced'
+    $link=(New-Object -ComObject WScript.Shell).CreateShortcut($lnk)
+    Assert ((Get-WidgetSupervisorCommandKind $link.TargetPath $link.Arguments $other)-eq 'headless') 'Foreign shortcut changed'
+    Assert ((Sync-WidgetStartupShortcut '' $app $false)-eq 'none') 'Empty path must do nothing'
+    $install=[IO.File]::ReadAllText((Join-Path $appDir 'Install.ps1'),[Text.Encoding]::UTF8)
+    Assert ($install-notmatch 'Set-WidgetStartupShortcut') 'Installer still creates the shortcut unconditionally'
+    Assert ($install.IndexOf('Sync-WidgetStartupShortcut')-gt $install.IndexOf('Register-WidgetSupervisorTask')) 'Shortcut decided before the task registration'
+    Assert ([IO.File]::ReadAllText((Join-Path $appDir 'runtime\start-supervisor.ps1'),[Text.Encoding]::UTF8)-match 'Sync-WidgetStartupShortcut') 'Opening Claude娘 does not sync the shortcut'
+  }
   Case 'Only the five most recent removed pictures are kept' {
     . ([ScriptBlock]::Create([IO.File]::ReadAllText((Join-Path $appDir 'runtime\characters.ps1'),[Text.Encoding]::UTF8)))
     foreach($name in @('Write-WidgetFileAtomic')){. (Import-Function (Join-Path $appDir 'runtime\common.ps1') $name)}
