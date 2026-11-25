@@ -52,58 +52,33 @@ function Receive-WidgetUpdateResult($Task){
 }
 
 # --- right-click → 关于 Claude娘 ------------------------------------------------------
-# A long strip card: title, one line of explanation, and a state on the right.
-function New-WidgetUpdateCard([string]$Title,[string]$Detail,[string]$Glyph){
-  $converter=[Windows.Media.BrushConverter]::new()
-  $card=New-Object Windows.Controls.Border;$card.CornerRadius=[Windows.CornerRadius]::new(10);$card.BorderThickness=[Windows.Thickness]::new(1)
-  $card.BorderBrush=$converter.ConvertFromString('#F0E1D7');$card.Background=$converter.ConvertFromString('#FFF8F4');$card.Padding=[Windows.Thickness]::new(11,9,11,9);$card.Margin=[Windows.Thickness]::new(-4,1,-4,1)
-  $grid=New-Object Windows.Controls.Grid
-  foreach($width in @([Windows.GridLength]::Auto,[Windows.GridLength]::new(1,[Windows.GridUnitType]::Star),[Windows.GridLength]::Auto)){$c=New-Object Windows.Controls.ColumnDefinition;$c.Width=$width;$grid.ColumnDefinitions.Add($c)|Out-Null}
-  $icon=New-Object Windows.Controls.Border;$icon.Width=30;$icon.Height=30;$icon.CornerRadius=[Windows.CornerRadius]::new(8);$icon.Background=$converter.ConvertFromString('#F8E6DC');$icon.Margin=[Windows.Thickness]::new(0,0,10,0);$icon.VerticalAlignment='Center'
-  $mark=New-SettingsText $Glyph 15 '#C0613E';$mark.HorizontalAlignment='Center';$mark.VerticalAlignment='Center';$icon.Child=$mark
-  $text=New-Object Windows.Controls.StackPanel;$text.VerticalAlignment='Center';[Windows.Controls.Grid]::SetColumn($text,1)
-  $main=New-SettingsText $Title 14 '#4A3328';$main.FontWeight=[Windows.FontWeights]::SemiBold
-  $sub=New-SettingsText $Detail 11.5 '#A68B7C';$sub.TextWrapping=[Windows.TextWrapping]::Wrap;$sub.Margin=[Windows.Thickness]::new(0,2,0,0)
-  $text.Children.Add($main)|Out-Null;$text.Children.Add($sub)|Out-Null
-  $state=New-SettingsText '' 12 '#C0613E';$state.FontWeight=[Windows.FontWeights]::SemiBold;$state.VerticalAlignment='Center';$state.Margin=[Windows.Thickness]::new(8,0,0,0);[Windows.Controls.Grid]::SetColumn($state,2)
-  $grid.Children.Add($icon)|Out-Null;$grid.Children.Add($text)|Out-Null;$grid.Children.Add($state)|Out-Null;$card.Child=$grid
-  return @{Card=$card;State=$state;Detail=$sub}
-}
+# Built from the same menu items as the other submenus (自动语录, 显示与位置).
 function Add-WidgetUpdateMenu {
   $script:settingsMenuUi.About=Add-SettingsSubmenu '关于 Claude娘' {
-    $head=New-WidgetUpdateCard ('Claude娘 v'+$script:appVersion) '社区维护版 · 基于 GPT 娘 (MIT)' '✦'
-    $head.Card.Background=[Windows.Media.BrushConverter]::new().ConvertFromString('#FDF0E9')
-    $script:settingsMenuUi.AboutHead=$head;Add-SettingsPanel $head.Card -Passive
-    Add-SettingsSection '更新'
-    $check=New-WidgetUpdateCard '检查更新' '立即向 GitHub 查询有没有新版本' '↻'
-    $script:settingsMenuUi.UpdateCheck=Add-WidgetUpdateCardItem $check {Start-WidgetManualUpdateCheck;$script:context.IsOpen=$false}
-    $auto=New-WidgetUpdateCard '自动更新' '每次启动挂件时检查一次，有新版本时 Claude娘会提醒你' '⚙'
-    $script:settingsMenuUi.UpdateAuto=$auto
-    $null=Add-WidgetUpdateCardItem $auto {$s=Get-WidgetUpdateSettings;if($s){Set-WidgetUpdateSettings (!$s.AutoCheck) $s.Beta}} -StayOpen
+    $script:settingsMenuUi.AboutVersion=Add-SettingsAction ('Claude娘 v'+$script:appVersion) {} -Description '社区维护版 · 基于 GPT 娘 (MIT)' -ReturnItem
+    $script:settingsMenuUi.AboutVersion.IsHitTestVisible=$false;$script:settingsMenuUi.AboutVersion.Focusable=$false
+    Add-SettingsDivider
+    $script:settingsMenuUi.UpdateCheck=Add-SettingsAction '检查更新' {Start-WidgetManualUpdateCheck;$script:context.IsOpen=$false} -ReturnItem
+    $script:settingsMenuUi.UpdateAuto=Add-SettingsAction '自动更新' {param($sender,$event)if($script:settingsMenuSync){return};$s=Get-WidgetUpdateSettings;if($s){Set-WidgetUpdateSettings ([bool]$sender.IsChecked) $s.Beta};Update-WidgetSettingsMenu} -Description '每次启动挂件时检查一次' -Checkable -ReturnItem
+    Add-SettingsDivider
     Add-SettingsSection '更新范围'
-    $stable=New-WidgetUpdateCard '正式版（默认）' '只提示正式发布的版本' '●'
-    $beta=New-WidgetUpdateCard '测试版' '包含测试版，总是提示最新的那个' '◆'
-    $script:settingsMenuUi.UpdateStable=$stable;$script:settingsMenuUi.UpdateBeta=$beta
-    $null=Add-WidgetUpdateCardItem $stable {$s=Get-WidgetUpdateSettings;if($s){Set-WidgetUpdateSettings $s.AutoCheck $false}} -StayOpen
-    $null=Add-WidgetUpdateCardItem $beta {$s=Get-WidgetUpdateSettings;if($s){Set-WidgetUpdateSettings $s.AutoCheck $true}} -StayOpen
+    $script:settingsMenuUi.UpdateStable=Add-SettingsAction '正式版（默认）' {$s=Get-WidgetUpdateSettings;if($s){Set-WidgetUpdateSettings $s.AutoCheck $false};Update-WidgetSettingsMenu} -Checkable -ReturnItem
+    $script:settingsMenuUi.UpdateBeta=Add-SettingsAction '测试版' {$s=Get-WidgetUpdateSettings;if($s){Set-WidgetUpdateSettings $s.AutoCheck $true};Update-WidgetSettingsMenu} -Checkable -ReturnItem
+    $script:settingsMenuUi.UpdateStable.Uid='radio';$script:settingsMenuUi.UpdateBeta.Uid='radio'
     $hint=New-SettingsText '只读取 GitHub 上公开的版本列表，不会自动下载或安装。' 11.5 '#9A7766'
-    $hint.TextWrapping=[Windows.TextWrapping]::Wrap;$hint.Margin=[Windows.Thickness]::new(0,6,0,2);Add-SettingsPanel $hint -Passive
+    $hint.TextWrapping=[Windows.TextWrapping]::Wrap;$hint.Margin=[Windows.Thickness]::new(0,8,0,0)
+    Add-SettingsPanel $hint -Passive
   } -ReturnItem
-}
-function Add-WidgetUpdateCardItem($Card,[scriptblock]$Action,[switch]$StayOpen){
-  $item=Add-SettingsPanel $Card.Card -ReturnItem
-  $item.StaysOpenOnClick=[bool]$StayOpen;$item.Padding=[Windows.Thickness]::new(6,1,6,1);$item.Add_Click($Action)
-  return $item
 }
 function Update-WidgetUpdateMenu {
   if(!$script:settingsMenuUi.UpdateAuto){return}
   $s=Get-WidgetUpdateSettings
-  if(!$s){$script:settingsMenuUi.UpdateAuto.State.Text='—';return}
-  $script:settingsMenuUi.UpdateAuto.State.Text=if($s.AutoCheck){'已开启'}else{'已关闭'}
-  $script:settingsMenuUi.UpdateAuto.State.Foreground=[Windows.Media.BrushConverter]::new().ConvertFromString($(if($s.AutoCheck){'#C0613E'}else{'#A3958C'}))
-  $script:settingsMenuUi.UpdateStable.State.Text=if($s.Beta){''}else{'✓ 当前'}
-  $script:settingsMenuUi.UpdateBeta.State.Text=if($s.Beta){'✓ 当前'}else{''}
-  $script:settingsMenuUi.AboutHead.Detail.Text='社区维护版 · 更新范围：'+$(if($s.Beta){'测试版'}else{'正式版'})+' · 基于 GPT 娘 (MIT)'
+  $ok=[bool]$s
+  foreach($item in @($script:settingsMenuUi.UpdateAuto,$script:settingsMenuUi.UpdateStable,$script:settingsMenuUi.UpdateBeta)){$item.IsEnabled=$ok}
+  if(!$ok){return}
+  $script:settingsMenuUi.UpdateAuto.IsChecked=[bool]$s.AutoCheck
+  $script:settingsMenuUi.UpdateStable.IsChecked=![bool]$s.Beta
+  $script:settingsMenuUi.UpdateBeta.IsChecked=[bool]$s.Beta
 }
 
 # --- manual check and the bottom-right card ------------------------------------------
