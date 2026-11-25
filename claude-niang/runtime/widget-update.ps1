@@ -197,18 +197,31 @@ function New-WidgetUpdateCardWindow {
   return $card
 }
 
-# Bottom-right corner of the screen Claude Niang is on; moved to her left when
-# the corner is where she stands, so the card never covers her.
+# Bottom-right corner inside the Claude window (physical pixels). If that corner is
+# where Claude Niang stands, the card moves to her left, or above her when there is
+# no room. Falls back to the screen's work area only when no Claude window is open.
 function Set-WidgetUpdateCardPosition($Card){
   $window=$Card.Window
-  $dpi=1.0;try{$dpi=[Windows.Media.VisualTreeHelper]::GetDpi($script:window).DpiScaleX}catch{}
-  $screen=[Windows.Forms.Screen]::FromHandle($script:widgetHandle)
-  $area=$screen.WorkingArea
-  $w=$window.ActualWidth;$h=$window.ActualHeight
-  $left=$area.Right/$dpi-$w;$top=$area.Bottom/$dpi-$h
-  if($script:window.IsVisible){
-    $wl=$script:window.Left;$wt=$script:window.Top;$wr=$wl+$script:window.ActualWidth;$wb=$wt+$script:window.ActualHeight
-    if($left-lt $wr -and $left+$w-gt $wl -and $top-lt $wb -and $top+$h-gt $wt){$left=[Math]::Max($area.Left/$dpi,$wl-$w)}
+  $handle=(New-Object Windows.Interop.WindowInteropHelper($window)).Handle
+  $hostOk=$script:hostHandle -and $script:hostHandle-ne [IntPtr]::Zero -and [ClaudeWidgetNative]::IsWindow($script:hostHandle) -and ![ClaudeWidgetNative]::IsIconic($script:hostHandle)
+  if($hostOk){
+    $f=[ClaudeWidgetNative]::Frame($script:hostHandle);$area=@{Left=$f.Left;Top=$f.Top;Right=$f.Right;Bottom=$f.Bottom}
+    $dpi=[ClaudeWidgetNative]::GetDpiForWindow($script:hostHandle)/96.0
+  }else{
+    $a=[Windows.Forms.Screen]::FromHandle($script:widgetHandle).WorkingArea;$area=@{Left=$a.Left;Top=$a.Top;Right=$a.Right;Bottom=$a.Bottom}
+    $dpi=[ClaudeWidgetNative]::GetDpiForWindow($script:widgetHandle)/96.0
   }
-  $window.Left=$left;$window.Top=$top
+  if($dpi-le 0){$dpi=1.0}
+  $m=[Math]::Round(16*$dpi);$w=[Math]::Ceiling($window.ActualWidth*$dpi);$h=[Math]::Ceiling($window.ActualHeight*$dpi)
+  $left=$area.Right-$w-$m;$top=$area.Bottom-$h-$m
+  if($script:window.IsVisible -and $script:widgetHandle -and $script:widgetHandle-ne [IntPtr]::Zero){
+    $n=[ClaudeWidgetNative]::Frame($script:widgetHandle)
+    if($left-lt $n.Right -and $left+$w-gt $n.Left -and $top-lt $n.Bottom -and $top+$h-gt $n.Top){
+      if($n.Left-$w-$m-ge $area.Left+$m){$left=$n.Left-$w-$m}
+      else{$top=$n.Top-$h-$m}
+    }
+  }
+  $left=[Math]::Max($area.Left+$m,[Math]::Min($area.Right-$w-$m,$left))
+  $top=[Math]::Max($area.Top+$m,[Math]::Min($area.Bottom-$h-$m,$top))
+  [ClaudeWidgetNative]::SetWindowPos($handle,[IntPtr]::Zero,[int]$left,[int]$top,0,0,0x15)|Out-Null
 }
