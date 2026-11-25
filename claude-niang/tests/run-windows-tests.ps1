@@ -554,6 +554,57 @@ public static class CnLaunchWindows{
     }finally{if(!$process.HasExited){$process.Kill()};$process.Dispose()}
     Assert (!(Test-Path -LiteralPath (Join-Path $config.dataDir 'worker-status.json'))) 'Check-only started quota worker'
   }
+  Case 'Update check reads only release tags, follows the chosen range, and keeps its settings' {
+    . (Import-Function (Join-Path $appDir 'runtime\common.ps1') 'Add-WidgetType')
+    Add-WidgetType -TypeName ClaudeNiangUpdate -Path (Join-Path $appDir 'runtime\update-check.cs') -ReferencedAssemblies @('System.Runtime.Serialization','System.Xml') -CacheDirectory (Join-Path $scratch 'types')
+    $page=[ClaudeNiangUpdate]::ReleasesPage
+    $feed='[{"tag_name":"v2.1.0-beta.2","html_url":"'+$page+'/tag/v2.1.0-beta.2","prerelease":true,"draft":false},'+
+      '{"tag_name":"v2.0.1","html_url":"https://example.com/elsewhere","prerelease":false,"draft":false},'+
+      '{"tag_name":"v2.2.0","prerelease":false,"draft":true},{"tag_name":"moved-to-community","prerelease":false,"draft":false},{"tag_name":"v2.0.0","prerelease":false,"draft":false}]'
+    $stable=[ClaudeNiangUpdate]::Evaluate($feed,'2.0.0',$false,1)|ConvertFrom-Json
+    Assert ($stable.ok -and $stable.newer -and $stable.latest-eq '2.0.1' -and !$stable.prerelease) ('Formal range picked '+$stable.latest)
+    Assert ($stable.url-eq ($page+'/tag/v2.0.1')) 'A release link outside the repository was not replaced'
+    $beta=[ClaudeNiangUpdate]::Evaluate($feed,'2.0.0',$true,1)|ConvertFrom-Json
+    Assert ($beta.newer -and $beta.latest-eq '2.1.0-beta.2' -and $beta.prerelease) ('Beta range picked '+$beta.latest)
+    Assert (!([ClaudeNiangUpdate]::Evaluate($feed,'2.0.1',$false,1)|ConvertFrom-Json).newer) 'The current version was offered as an update'
+    Assert (!([ClaudeNiangUpdate]::Evaluate('<html>','2.0.0',$false,1)|ConvertFrom-Json).ok) 'A broken release list was accepted'
+    Assert ([ClaudeNiangUpdate]::Compare('2.1.0','2.1.0-beta.9')-gt 0 -and [ClaudeNiangUpdate]::Compare('2.1.0-beta.2','2.1.0-beta.10')-lt 0) 'Version order'
+    $dir=Join-Path $scratch 'update-settings';$defaults=[ClaudeNiangUpdate]::LoadSettings($dir)
+    Assert ($defaults.AutoCheck -and !$defaults.Beta) 'Defaults must be automatic check on, formal range'
+    [ClaudeNiangUpdate]::SaveSettings($dir,$false,$true);$saved=[ClaudeNiangUpdate]::LoadSettings($dir)
+    Assert (!$saved.AutoCheck -and $saved.Beta) 'Saved settings were not read back'
+  }
+  Case 'The startup check shows one bubble only for a newer release, and nothing when turned off' {
+    . (Import-Function (Join-Path $appDir 'runtime\common.ps1') 'Add-WidgetType')
+    . ([ScriptBlock]::Create([IO.File]::ReadAllText((Join-Path $appDir 'runtime\widget-update.ps1'),[Text.Encoding]::UTF8)))
+    $savedData=$script:dataDir;$script:dataDir=Join-Path $scratch 'update-widget';$null=[IO.Directory]::CreateDirectory($script:dataDir)
+    $script:appVersion='2.0.0';$script:shownNotices=@()
+    function Show-WidgetNotice([string]$Text){$script:shownNotices+=,$Text}
+    $feedFile=Join-Path $scratch 'feed.json'
+    [IO.File]::WriteAllText($feedFile,'[{"tag_name":"v2.1.0","prerelease":false,"draft":false},{"tag_name":"v2.2.0-beta.1","prerelease":true,"draft":false}]',[Text.UTF8Encoding]::new($false))
+    $env:CLAUDE_NIANG_UPDATE_FEED=$feedFile
+    try{
+      Tick-WidgetUpdateCheck $false;Assert ($script:updateCheck.state-eq 'idle') 'Checked before Claude Niang appeared'
+      Tick-WidgetUpdateCheck $true
+      for($i=0;$i-lt 100 -and $script:updateCheck.state-eq 'running';$i++){Start-Sleep -Milliseconds 50;Tick-WidgetUpdateCheck $true}
+      Assert ($script:updateCheck.state-eq 'done') ('Check did not finish: '+$script:updateCheck.state)
+      Assert ($script:shownNotices.Count-eq 1 -and $script:shownNotices[0]-match 'v2\.1\.0') ('Bubble: '+($script:shownNotices-join ' | '))
+      Tick-WidgetUpdateCheck $true;Assert ($script:shownNotices.Count-eq 1) 'Checked again in the same widget run'
+      [ClaudeNiangUpdate]::SaveSettings($script:dataDir,$false,$false)
+      $script:updateCheck=@{state='idle';task=$null};$script:shownNotices=@()
+      Tick-WidgetUpdateCheck $true;Assert ($script:updateCheck.state-eq 'off' -and !$script:shownNotices.Count) 'Checked although automatic check is off'
+    }finally{Remove-Item Env:CLAUDE_NIANG_UPDATE_FEED -ErrorAction SilentlyContinue;$script:dataDir=$savedData}
+  }
+  Case 'The quote editor window loads in the new style and the about menu sits under 显示与位置' {
+    Add-Type -AssemblyName PresentationFramework,PresentationCore,WindowsBase
+    $ui=[IO.File]::ReadAllText((Join-Path $appDir 'runtime\ui-settings.ps1'),[Text.Encoding]::UTF8)
+    $xaml=[regex]::Match($ui,"(?s)\`$editor=\[Windows\.Markup\.XamlReader\]::Parse\(@'\r?\n(.*?)\r?\n'@\)").Groups[1].Value
+    $editor=[Windows.Markup.XamlReader]::Parse($xaml)
+    foreach($name in @('Lines','Feedback','Count','Defaults','Save','Done','Close','Header','Face')){Assert ($editor.FindName($name)) ('Quote editor misses '+$name)}
+    Assert ($editor.WindowStyle-eq 'None' -and $editor.AllowsTransparency) 'Quote editor still uses the system frame'
+    $display=$ui.IndexOf("Add-SettingsSubmenu '显示与位置'");$about=$ui.IndexOf('Add-WidgetUpdateMenu');$version=$ui.IndexOf("New-SettingsText ('Claude 娘 '")
+    Assert ($display-gt 0 -and $about-gt $display -and $about-lt $version) 'The about menu is not right under 显示与位置'
+  }
   Case 'Usage window compiles and renders both pages from local data without errors' {
     $dash=Join-Path $scratch 'usage-window';$state=Join-Path $dash 'state';$projects=Join-Path $dash 'claude\projects\E--Work-alpha'
     $null=[IO.Directory]::CreateDirectory($state);$null=[IO.Directory]::CreateDirectory($projects)
