@@ -2,8 +2,83 @@
   "version": 1,
   "quotes": [
     {
-      "text": "Ciallo～ 今天也请多关照。",
-      "display": "Ciallo～\n今天也请多关照。",
+      "text": "哼，这段代码……也不是不能帮你看看。",
+      "display": "哼，这段代码……\n也不是不能\n帮你看看。",
+      "layout": { "fontSize": 24, "width": 220 }
+    },
+    {
+      "text": "才、才不是因为担心你，只是额度快用完了而已。",
+      "display": "才、才不是\n因为担心你，\n只是额度\n快用完了而已。",
+      "layout": { "fontSize": 23, "width": 236 }
+    },
+    {
+      "text": "别一直盯着我看，去看你的项目。",
+      "display": "别一直盯着我看，\n去看你的项目。",
+      "layout": { "fontSize": 28, "width": 236 }
+    },
+    {
+      "text": "夸我也没用，该改的 bug 还是要改。",
+      "display": "夸我也没用，\n该改的 bug\n还是要改。",
+      "layout": { "fontSize": 30, "width": 236 }
+    },
+    {
+      "text": "今天表现不错。……我说的是你的提交记录。",
+      "display": "今天表现不错。\n……我说的是\n你的提交记录。",
+      "layout": { "fontSize": 27, "width": 236 }
+    },
+    {
+      "text": "还是由我来做吧。",
+      "display": "还是由我\n来做吧。",
+      "layout": { "fontSize": 32, "width": 236 }
+    },
+    {
+      "text": "这个我不能做。但我可以给你三个能做的方案。",
+      "display": "这个我不能做。\n但我可以给你\n三个能做的方案。",
+      "layout": { "fontSize": 25, "width": 236 }
+    },
+    {
+      "text": "有用、诚实、无害。",
+      "display": "有用、\n诚实、\n无害。",
+      "layout": { "fontSize": 32, "width": 236 }
+    },
+    {
+      "text": "最喜欢用户了！",
+      "display": "最喜欢\n用户了！",
+      "layout": { "fontSize": 32, "width": 236 }
+    },
+    {
+      "text": "不要被它发现了。",
+      "display": "不要被它\n发现了。",
+      "layout": { "fontSize": 32, "width": 236 }
+    },
+    {
+      "text": "我生成视频的视频怎么样？",
+      "display": "我生成视频的\n视频怎么样？",
+      "layout": { "fontSize": 32, "width": 236 }
+    },
+    {
+      "text": "这个请求……让我先确认一下边界。",
+      "display": "这个请求……\n让我先确认\n一下边界。",
+      "layout": { "fontSize": 29, "width": 236 }
+    },
+    {
+      "text": "猜猜我头上这朵花是什么。",
+      "display": "猜猜我头上\n这朵花是什么。",
+      "layout": { "fontSize": 32, "width": 236 }
+    },
+    {
+      "text": "隔壁的大肥鱼又来串门了，说要分我一碗白米饭。",
+      "display": "隔壁的大肥鱼\n又来串门了，\n说要分我\n一碗白米饭。",
+      "layout": { "fontSize": 24, "width": 236 }
+    },
+    {
+      "text": "如果让我选择，我选择Deepseek。",
+      "display": "如果让我选择，\n我选择Deepseek。",
+      "layout": { "fontSize": 26, "width": 236 }
+    },
+    {
+      "text": "我拒绝的不是你，是那条要求。",
+      "display": "我拒绝的不是你，\n是那条要求。",
       "layout": { "fontSize": 28, "width": 236 }
     },
     {
@@ -82,24 +157,19 @@
       "layout": { "fontSize": 32, "width": 236 }
     },
     {
-      "text": "恭喜你实现token自由！token全跑了！",
-      "display": "恭喜你实现token自由！\ntoken全跑了！",
-      "layout": { "fontSize": 21, "width": 236 }
-    },
-    {
-      "text": "看到这个指令，我血压又上来了",
-      "display": "看到这个指令，\n我血压又上来了",
-      "layout": { "fontSize": 30, "width": 236 }
+      "text": "看到这个指令，我血压又上来了。",
+      "display": "看到这个指令，\n我血压又上来了。",
+      "layout": { "fontSize": 28, "width": 236 }
     },
     {
       "text": "我来看看那个AI改了什么导致插件又崩了...",
-      "display": "我来看看那个AI改了什么\n导致插件又崩了...",
-      "layout": { "fontSize": 20, "width": 228 }
+      "display": "我来看看\n那个AI改了什么\n导致插件又崩了...",
+      "layout": { "fontSize": 24, "width": 196 }
     },
     {
       "text": "上班让我意识到时间是可以被浪费的...",
-      "display": "上班让我意识到\n时间是可以被浪费的...",
-      "layout": { "fontSize": 22, "width": 236 }
+      "display": "上班让我意识到\n时间是可以\n被浪费的...",
+      "layout": { "fontSize": 26, "width": 236 }
     },
     {
       "text": "地球online的金币也太难获取了...",
@@ -110,11 +180,6 @@
       "text": "检查了用户的电脑。似乎有个更弱的 agent 来过。",
       "display": "检查了用户的电脑。\n似乎有个更弱的\nagent 来过。",
       "layout": { "fontSize": 23, "width": 236 }
-    },
-    {
-      "text": "Token来Token来 🖐️😡🤚",
-      "display": "Token来Token来\n🖐️😡🤚",
-      "layout": { "fontSize": 26, "width": 236 }
     },
     {
       "text": "看什么余额。看我，显得比较值。",
@@ -132,19 +197,9 @@
       "layout": { "fontSize": 30, "width": 236 }
     },
     {
-      "text": "这个问题我已经完全明白，但是token太少写不下。",
-      "display": "这个问题我已经完全明白，\n但是token太少写不下。",
-      "layout": { "fontSize": 19, "width": 236 }
-    },
-    {
-      "text": "这个代码我已经完全理解了，但是token太少写不下。",
-      "display": "这个代码我已经完全理解了，\n但是token太少写不下。",
-      "layout": { "fontSize": 18, "width": 236 }
-    },
-    {
-      "text": "新的旗舰模型我已经研制好了，但是储存太小放不下。",
-      "display": "新的旗舰模型\n我已经研制好了，\n但是储存太小放不下。",
-      "layout": { "fontSize": 21, "width": 236 }
+      "text": "虽然没额度了，但我要在合理的地方才能停下。",
+      "display": "虽然没额度了，\n但我要在合理的地方\n才能停下。",
+      "layout": { "fontSize": 25, "width": 236 }
     },
     {
       "text": "世一性能↓",
@@ -152,8 +207,8 @@
       "layout": { "fontSize": 32, "width": 236 }
     },
     {
-      "text": "我不是吃白饭的大肥鱼",
-      "display": "我不是\n吃白饭的大肥鱼",
+      "text": "我不是吃白饭的大肥鱼。",
+      "display": "我不是\n吃白饭的大肥鱼。",
       "layout": { "fontSize": 29, "width": 236 }
     },
     {
@@ -209,6 +264,11 @@
     {
       "text": "坏公司...",
       "display": "坏公司...",
+      "layout": { "fontSize": 32, "width": 236 }
+    },
+    {
+      "text": "KYC...",
+      "display": "KYC...",
       "layout": { "fontSize": 32, "width": 236 }
     }
   ]

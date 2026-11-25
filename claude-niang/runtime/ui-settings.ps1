@@ -1,27 +1,86 @@
 ﻿function Open-QuoteEditor {
   if($script:quoteEditor -and $script:quoteEditor.IsVisible){$script:quoteEditor.Activate()|Out-Null;return}
+  # Same look as the usage window (runtime\dashboard\app.css): no system title
+  # bar, a white header with the logo tile, warm page color, the same buttons.
   $editor=[Windows.Markup.XamlReader]::Parse(@'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
- Title="Claude 娘 · 我的语录" Width="540" Height="480" MinWidth="440" MinHeight="340" ShowInTaskbar="False"
- FontFamily="Microsoft YaHei UI" FontSize="14" Background="#FBF8F5" WindowStartupLocation="CenterScreen">
- <Grid Margin="22">
-  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-  <TextBlock Margin="0,0,0,14" TextWrapping="Wrap" Foreground="#A9603F" Text="一行一句语录。想让某句更常出现，可写：3 | 这句语录。"/>
-  <TextBox x:Name="Lines" Grid.Row="1" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" FontSize="16" Padding="12" Background="White" BorderBrush="#E6D6CB"/>
-  <TextBlock x:Name="Feedback" Grid.Row="2" Margin="0,12,0,10" Foreground="#A9603F" TextWrapping="Wrap"/>
-  <Grid Grid.Row="3">
-   <Button x:Name="Defaults" Content="恢复内置语录" Padding="12,6" HorizontalAlignment="Left"/>
-   <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-    <Button x:Name="Save" Content="保存" Padding="20,6" Margin="0,0,10,0"/>
-    <Button x:Name="Done" Content="关闭" Padding="20,6"/>
-   </StackPanel>
+ Title="Claude 娘 · 我的语录" Width="640" Height="600" MinWidth="520" MinHeight="440" ShowInTaskbar="False"
+ WindowStyle="None" AllowsTransparency="True" Background="Transparent" ResizeMode="CanResizeWithGrip"
+ FontFamily="Microsoft YaHei UI" FontSize="14" WindowStartupLocation="CenterScreen">
+ <Window.Resources>
+  <Style x:Key="Ghost" TargetType="Button">
+   <Setter Property="Foreground" Value="#6E635A"/><Setter Property="MinHeight" Value="38"/><Setter Property="Padding" Value="16,0"/><Setter Property="Cursor" Value="Hand"/>
+   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+    <Border x:Name="B" Background="#FFFFFF" BorderBrush="#DDD3CA" BorderThickness="1" CornerRadius="9" Padding="{TemplateBinding Padding}">
+     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+    <ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="B" Property="Background" Value="#FAF7F4"/><Setter TargetName="B" Property="BorderBrush" Value="#CFC3B8"/></Trigger></ControlTemplate.Triggers>
+   </ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style x:Key="Primary" TargetType="Button">
+   <Setter Property="Foreground" Value="#FFFFFF"/><Setter Property="FontWeight" Value="SemiBold"/><Setter Property="MinHeight" Value="38"/><Setter Property="Padding" Value="22,0"/><Setter Property="Cursor" Value="Hand"/>
+   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+    <Border x:Name="B" Background="#C6613F" CornerRadius="9" Padding="{TemplateBinding Padding}">
+     <Border.Effect><DropShadowEffect BlurRadius="8" ShadowDepth="2" Direction="270" Opacity="0.22" Color="#C6613F"/></Border.Effect>
+     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+    <ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="B" Property="Background" Value="#B3532F"/></Trigger></ControlTemplate.Triggers>
+   </ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style x:Key="WindowButton" TargetType="Button">
+   <Setter Property="Width" Value="46"/><Setter Property="Height" Value="32"/><Setter Property="Foreground" Value="#6E635A"/>
+   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+    <Border x:Name="B" Background="Transparent" CornerRadius="0,13,0,0"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+    <ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="B" Property="Background" Value="#D4473A"/><Setter Property="Foreground" Value="#FFFFFF"/></Trigger></ControlTemplate.Triggers>
+   </ControlTemplate></Setter.Value></Setter>
+  </Style>
+ </Window.Resources>
+ <Border Margin="14" CornerRadius="14" Background="#F7F4F0" BorderBrush="#E3D8CF" BorderThickness="1">
+  <Border.Effect><DropShadowEffect BlurRadius="24" ShadowDepth="4" Direction="270" Opacity="0.18" Color="#4A2E1E"/></Border.Effect>
+  <Grid>
+   <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+   <Border x:Name="Header" Background="#FFFFFF" CornerRadius="13,13,0,0" BorderBrush="#EBE4DD" BorderThickness="0,0,0,1">
+    <Grid>
+     <StackPanel Orientation="Horizontal" Margin="24,30,60,20">
+      <Border Width="46" Height="46" Padding="4" CornerRadius="13" BorderBrush="#F0D9CD" BorderThickness="1" VerticalAlignment="Center">
+       <Border.Background><LinearGradientBrush StartPoint="0,0" EndPoint="1,1"><GradientStop Color="#FDF3EE" Offset="0"/><GradientStop Color="#F5DFD3" Offset="1"/></LinearGradientBrush></Border.Background>
+       <Image x:Name="Face" Stretch="Uniform"/></Border>
+      <StackPanel Margin="14,0,0,0" VerticalAlignment="Center">
+       <TextBlock Text="我的语录" FontSize="22" FontWeight="SemiBold" Foreground="#2C2521"/>
+       <TextBlock Margin="0,3,0,0" FontSize="13" Foreground="#6E635A" TextWrapping="Wrap" Text="一行一句。想让某句更常出现，可写成：3 | 这句语录"/>
+      </StackPanel>
+     </StackPanel>
+     <Button x:Name="Close" Style="{StaticResource WindowButton}" HorizontalAlignment="Right" VerticalAlignment="Top" ToolTip="关闭">
+      <Path Data="M0,0 L10,10 M10,0 L0,10" Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" StrokeThickness="1.2"/></Button>
+    </Grid>
+   </Border>
+   <Border Grid.Row="1" Margin="24,20,24,0" Background="#FFFFFF" CornerRadius="12" BorderBrush="#EBE4DD" BorderThickness="1">
+    <TextBox x:Name="Lines" AcceptsReturn="True" AcceptsTab="True" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" FontSize="15" Padding="14,12"
+     Background="Transparent" BorderThickness="0" Foreground="#2C2521" SelectionBrush="#E9B7A2" CaretBrush="#C6613F"/>
+   </Border>
+   <Grid Grid.Row="2" Margin="24,12,24,22">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+    <TextBlock x:Name="Feedback" Margin="2,0,12,12" FontSize="12.5" Foreground="#A1968D" TextWrapping="Wrap"/>
+    <TextBlock x:Name="Count" Grid.Column="1" Margin="0,0,2,12" FontSize="12.5" Foreground="#C6613F" FontWeight="SemiBold"/>
+    <Button x:Name="Defaults" Grid.Row="1" Content="恢复内置语录" Style="{StaticResource Ghost}" HorizontalAlignment="Left"/>
+    <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
+     <Button x:Name="Done" Content="关闭" Style="{StaticResource Ghost}" Margin="0,0,10,0"/>
+     <Button x:Name="Save" Content="保存" Style="{StaticResource Primary}"/>
+    </StackPanel>
+   </Grid>
   </Grid>
- </Grid>
+ </Border>
 </Window>
 '@)
   $script:quoteEditor=$editor
   $editor.Owner=$script:window
   $lines=$editor.FindName('Lines');$feedback=$editor.FindName('Feedback')
+  try{$editor.FindName('Face').Source=[Windows.Media.Imaging.BitmapImage]::new([Uri]::new((Join-Path $script:appDir 'assets\claude-niang.png')))}catch{}
+  $editor.FindName('Header').Add_MouseLeftButtonDown({param($sender,$event)if($event.ChangedButton-eq [Windows.Input.MouseButton]::Left){try{$script:quoteEditor.DragMove()}catch{}}})
+  $editor.FindName('Close').Add_Click({$script:quoteEditor.Close()})
+  $lines.Add_TextChanged({
+    $count=@(($script:quoteEditor.FindName('Lines').Text -split '\r?\n')|Where-Object{$_.Trim()}).Count
+    $script:quoteEditor.FindName('Count').Text="共 $count 句"
+  })
   $current=Get-WidgetQuoteSettings $script:dataDir
   $lines.Text=($current.quotes|ForEach-Object{if($_.weight-eq 1){$_.text}else{([string]$_.weight)+' | '+$_.text}})-join [Environment]::NewLine
   $feedback.Text=if($current.error){$current.error}else{'每条最多 200 字，最多 5000 条，保存文件不超过 1 MB。语录在你的电脑上保存。'}
@@ -45,7 +104,10 @@
     }catch{$script:quoteEditor.FindName('Feedback').Text=$_.Exception.Message}
   })
   $editor.FindName('Done').Add_Click({$script:quoteEditor.Close()})
-  $editor.Add_KeyDown({param($sender,$event)if($event.Key-eq [Windows.Input.Key]::Escape){$sender.Close();$event.Handled=$true}})
+  $editor.Add_KeyDown({param($sender,$event)
+    if($event.Key-eq [Windows.Input.Key]::Escape){$sender.Close();$event.Handled=$true}
+    elseif($event.Key-eq [Windows.Input.Key]::S -and [Windows.Input.Keyboard]::Modifiers-eq [Windows.Input.ModifierKeys]::Control){$sender.FindName('Save').RaiseEvent([Windows.RoutedEventArgs]::new([Windows.Controls.Primitives.ButtonBase]::ClickEvent));$event.Handled=$true}
+  })
   $editor.Show()
 }
 
@@ -210,6 +272,7 @@ function Initialize-WidgetSettingsMenu {
   Add-SettingsDivider
   Add-SettingsAction '恢复右下角位置' {if($script:followHost){$script:offsetRight=0;$script:offsetLeft=0;$script:offsetBottom=0;$script:anchor='right'}else{$script:desktopLeft=$null;$script:desktopTop=$null};$script:side='right';$script:lastPosition=$null;Set-Facing;Hide-Quota;Save-Settings;Tick-Widget} -StayOpen
   } -ReturnItem
+  Add-WidgetUpdateMenu
   $version=New-SettingsText ('Claude 娘 '+$script:appVersion+' · 基于 GPT 娘 (MIT)') 11.5 '#A8907F';$version.Margin=[Windows.Thickness]::new(10,4,0,2)
   Add-SettingsPanel $version -Passive
   Add-SettingsDivider
@@ -278,6 +341,7 @@ function Update-WidgetSettingsMenu{
     $script:settingsMenuUi.Volume.Value=$script:soundVolume;$script:settingsMenuUi.Volume.IsEnabled=$script:soundOn;$script:settingsMenuUi.VolumeText.Text=([Math]::Round($script:soundVolume*100)).ToString()+'%'
     $script:sizeSlider.Value=$script:scale;$script:settingsMenuUi.SizeText.Text=([Math]::Round($script:scale*100)).ToString()+'%';Update-WidgetSizePresets
     $script:bubbleSizeSlider.Value=$script:bubbleScale;$script:settingsMenuUi.BubbleSizeText.Text=([Math]::Round($script:bubbleScale*100)).ToString()+'%'
+    Update-WidgetUpdateMenu
   }finally{$script:settingsMenuSync=$false}
 }
 

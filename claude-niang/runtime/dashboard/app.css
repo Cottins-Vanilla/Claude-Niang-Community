@@ -77,11 +77,43 @@ input[type=search], input[type=date], select {
 .sidebar { width: var(--sidebar); flex: 0 0 var(--sidebar); height: 100vh; display: flex; flex-direction: column; padding: 0 14px 18px; background: var(--surface); border-right: 1px solid var(--border); }
 /* Logo and name centered in the sidebar's top block (same height as the top bar). */
 /* Sizes as in the reference: 48px logo tile, 10px gap, 19px name, 11px line under it. */
-.brand { flex: none; height: var(--bar); display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0 14px; margin: 0 -14px 16px; border-bottom: 1px solid var(--border); }
-/* The whole character fits inside the tile (like the reference): nothing of her is cropped. */
-.brand-logo { width: 48px; height: 48px; flex: none; padding: 4px; border-radius: 13px; border: 1px solid #f0d9cd; background: linear-gradient(145deg, #fdf3ee, #f5dfd3); box-shadow: 0 3px 10px rgba(198, 97, 63, .07); }
-.brand-logo img { display: block; width: 100%; height: 100%; object-fit: contain; }
-.brand-name { font-size: 19px; font-weight: 650; line-height: 28px; white-space: nowrap; }
+.brand { position: relative; flex: none; height: var(--bar); display: flex; align-items: center; justify-content: center; gap: 10px; padding: 0 14px; margin: 0 -14px 16px; border-bottom: 1px solid var(--border); }
+/* The whole character fits inside the tile (like the reference): nothing of her is cropped.
+   The tile is a button: poking it is the little easter egg (app.js). */
+.brand-logo { position: relative; width: 48px; height: 48px; min-height: 0; flex: none; padding: 4px; border-radius: 13px; border: 1px solid #f0d9cd; background: linear-gradient(145deg, #fdf3ee, #f5dfd3); box-shadow: 0 3px 10px rgba(198, 97, 63, .07); cursor: default; app-region: no-drag; -webkit-app-region: no-drag; }
+/* Hidden easter egg: looks like a plain picture, no hover hint. */
+.brand-logo:hover { border-color: #f0d9cd; background: linear-gradient(145deg, #fdf3ee, #f5dfd3); }
+.brand-logo img { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+/* Name and version as one block, centered next to the logo; the version sits left-aligned under the name. */
+.brand-text { display: flex; flex-direction: column; align-items: flex-start; text-align: left; }
+.brand-name { font-size: 19px; font-weight: 650; line-height: 24px; white-space: nowrap; }
+.brand-version { margin-top: 2px; color: var(--accent); font-size: 12px; font-weight: 600; line-height: 18px; letter-spacing: .3px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.brand-version:empty { display: none; }
+/* Easter egg: a squish, a spin after five quick pokes, floating hearts and a line. */
+.brand-logo.poke { animation: poke .62s cubic-bezier(.3, 1.6, .5, 1); }
+.brand-logo.spin { animation: twirl .95s cubic-bezier(.45, 0, .2, 1); }
+@keyframes poke {
+  0% { transform: scale(1); } 20% { transform: scale(1.18, .82); } 45% { transform: scale(.9, 1.12) translateY(-5px); }
+  70% { transform: scale(1.05, .96); } 100% { transform: scale(1); }
+}
+@keyframes twirl {
+  0% { transform: rotate(0) scale(1); } 30% { transform: rotate(160deg) scale(1.15) translateY(-6px); }
+  70% { transform: rotate(330deg) scale(1.08); } 100% { transform: rotate(360deg) scale(1); }
+}
+.brand-pop { position: absolute; z-index: 20; pointer-events: none; color: var(--accent); font-size: 14px; line-height: 1; animation: pop-up .95s ease-out forwards; }
+@keyframes pop-up {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(.4); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rot)) scale(1.1); }
+}
+.brand-say { position: absolute; z-index: 21; left: 50%; top: calc(100% - 12px); max-width: 188px; padding: 8px 12px; border-radius: 12px; background: #2f2723; color: #fff; font-size: 12.5px; line-height: 1.5; text-align: center; box-shadow: 0 8px 22px rgba(30, 18, 12, .22); transform: translateX(-50%); pointer-events: none; }
+.brand-say::before { content: ""; position: absolute; left: 50%; top: -5px; width: 10px; height: 10px; background: #2f2723; transform: translateX(-50%) rotate(45deg); border-radius: 2px; }
+.brand-say.show { animation: say 1.9s ease forwards; }
+@keyframes say {
+  0% { opacity: 0; transform: translate(-50%, 6px) scale(.92); } 10% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  85% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, -4px); }
+}
+@media (prefers-reduced-motion: reduce) { .brand-logo.poke, .brand-logo.spin, .brand-pop { animation-duration: .01s; } }
 .nav { display: flex; flex-direction: column; gap: 4px; }
 .nav button { justify-content: flex-start; gap: 11px; width: 100%; min-height: 42px; padding: 0 13px; border: 0; border-radius: 10px; background: none; color: var(--text-2); font-size: 14.5px; position: relative; }
 .nav button:hover { background: var(--sunken); color: var(--text); }
@@ -89,7 +121,6 @@ input[type=search], input[type=date], select {
 .nav button.selected::before { content: ""; position: absolute; left: -14px; top: 9px; bottom: 9px; width: 3px; border-radius: 0 3px 3px 0; background: var(--accent); }
 .sidebar-foot { margin-top: auto; display: flex; flex-direction: column; gap: 12px; }
 .side-note { padding: 12px; border-radius: 10px; background: var(--sunken); border: 1px solid var(--border); color: var(--text-2); font-size: 12px; line-height: 1.65; }
-.version { padding: 0 6px; color: var(--muted); font-size: 11.5px; }
 
 /* --- workspace ------------------------------------------------------------------ */
 .workspace { flex: 1; min-width: 0; height: 100vh; display: flex; flex-direction: column; }

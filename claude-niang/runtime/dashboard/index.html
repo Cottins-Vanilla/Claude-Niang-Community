@@ -10,8 +10,12 @@
 <body>
 <aside class="sidebar">
   <div class="brand">
-    <div class="brand-logo"><img src="../../assets/claude-niang.png" alt=""></div>
-    <div class="brand-name">Claude娘</div>
+    <button class="brand-logo" id="brand-logo" type="button" tabindex="-1" aria-label="Claude娘"><img src="../../assets/claude-niang.png" alt=""></button>
+    <div class="brand-text">
+      <div class="brand-name">Claude娘</div>
+      <div class="brand-version" id="brand-version"></div>
+    </div>
+    <div class="brand-say" id="brand-say" role="status" hidden></div>
   </div>
   <nav class="nav" aria-label="页面">
     <button data-view="overview" class="selected">
@@ -23,7 +27,6 @@
   </nav>
   <div class="sidebar-foot">
     <div class="side-note">额度只在点「刷新额度」或点角色时读取；本机用量每 20 秒自动更新。</div>
-    <div class="version" id="version"></div>
   </div>
 </aside>
 

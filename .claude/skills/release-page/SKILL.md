@@ -9,12 +9,14 @@ description: Claude 娘社区版 GitHub Release 发布页的正式格式和发�
 
 | 发布页部分 | 来源 | 规则 |
 |---|---|---|
-| 标题 | 工作流固定生成 | `Claude 娘社区版 vX.Y.Z · Windows` |
+| 标题 | 工作流固定生成 | `Claude 娘社区版 vX.Y.Z · Windows`；测试版为 `Claude 娘社区版 vX.Y.Z-beta.N · Windows（测试版）` |
 | 正文 | CHANGELOG 里 `## X.Y.Z — YYYY-MM-DD` 这一节的内容（不含标题行） | 按下面的格式写 |
 | 附件 | 工作流构建 | 恰好 3 个：`claude-niang-vX.Y.Z-windows.zip`、`claude-niang-vX.Y.Z-windows.zip.sha256`、`claude-niang-usage.mcpb` |
 | 标签 | 工作流创建 | 指向触发时 `main` 的提交，不提前手动创建 |
 
 所以“写发布页”就是写 CHANGELOG 的版本章节。
+
+**测试版**（`vX.Y.Z-beta.N`，规则见 `release-version` skill）走同一个工作流，区别只有：发布为“预发布”、不会成为 Latest、发布前不检查 README（README 继续描述最新正式版）。正文格式相同，概括句开头写明「测试版」，并在「已知问题」里写出还没测完的地方。只有在 Claude娘右键「关于 Claude娘」里把更新范围设成「测试版」的用户会收到提醒。
 
 ## 正文格式
 

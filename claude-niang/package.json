@@ -1,6 +1,6 @@
 {
   "name": "claude-niang-usage",
-  "version": "2.0.0",
+  "version": "2.1.0-beta.1",
   "private": true,
   "type": "module",
   "description": "Claude娘额度挂件：Claude 桌面端右下角的角色挂件，自动识别套餐与额度窗口",

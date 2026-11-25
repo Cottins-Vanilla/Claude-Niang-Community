@@ -21,6 +21,8 @@
   "runtime/dashboard.ps1",
   "runtime/dashboard-host.ps1",
   "runtime/dashboard-host.cs",
+  "runtime/update-check.cs",
+  "runtime/widget-update.ps1",
   "runtime/dashboard/index.html",
   "runtime/dashboard/app.css",
   "runtime/dashboard/app.js",

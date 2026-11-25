@@ -58,28 +58,36 @@ export function createReleaseTree(root,output){
   fs.writeFileSync(path.join(output,'release-info.json'),JSON.stringify(info,null,2)+'\n');
   return {...info,files:files.length+4,output};
 }
-const stableVersion=/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
+// A formal release is vX.Y.Z; a test build is vX.Y.Z-beta.N (published as a
+// pre-release, never Latest). No other suffix is accepted.
+const releaseVersion=/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-beta\.([1-9]\d*))?$/;
+export const isBetaVersion=version=>releaseVersion.test(version) && version.includes('-beta.');
 const sha256=data=>createHash('sha256').update(data).digest('hex');
 const assetNames=version=>['claude-niang-v'+version+'-windows.zip','claude-niang-v'+version+'-windows.zip.sha256','claude-niang-usage.mcpb'];
 export function validateReleaseMetadata(root,tag){
   const read=name=>fs.readFileSync(path.join(root,name),'utf8').replace(/^\uFEFF/,'');
   const {version}=JSON.parse(read('claude-niang/package.json'));
-  if(!stableVersion.test(version) || tag!=='v'+version)throw new Error('Release tag must be exactly vX.Y.Z and match package.json; suffixes are not allowed');
+  if(!releaseVersion.test(version) || tag!=='v'+version)throw new Error('Release tag must be exactly vX.Y.Z or vX.Y.Z-beta.N and match package.json; other suffixes are not allowed');
   if(JSON.parse(read('claude-niang/extension/manifest.json')).version!==version)throw new Error('Extension manifest version does not match package.json');
-  const readme=read('README.md'),readmeVersions=[...readme.matchAll(/\*\*当前程序版本：([^*]+)\*\*/g)];
-  if(readmeVersions.length!==1 || readmeVersions[0][1]!==version)throw new Error('README current version does not match package.json');
-  // Any repository's release link counts, so a fork or a renamed repository is checked the same way.
-  const links=[...readme.matchAll(/https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/releases\/(?:tag|download)\/([^/\s)"#?]+)/g)];
-  if(links.some(match=>match[1]!==tag) || /https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/releases\/latest\/download\//.test(readme))throw new Error('README release links must use the exact current version tag');
-  if([...readme.matchAll(/claude-niang-v([^\s/"`]+)-windows\.zip/g)].some(match=>match[1]!==version))throw new Error('README ZIP filenames must match package.json');
-  if([...readme.matchAll(/img\.shields\.io\/badge\/Release-v([0-9.]+)-/g)].some(match=>match[1]!==version))throw new Error('README release badge must match package.json');
+  const prerelease=isBetaVersion(version);
+  // The README describes the current formal release; a test build leaves it as it is.
+  if(!prerelease)validateReadme(read('README.md'),version,tag);
   const lines=read('CHANGELOG.md').split(/\r?\n/),heading=new RegExp('^## '+version.replace(/\./g,'\\.')+'(?:\\s|$)');
   const starts=lines.flatMap((line,index)=>heading.test(line)?[index]:[]);
   if(starts.length!==1)throw new Error('CHANGELOG must contain exactly one section for '+version);
   const start=starts[0]+1,following=lines.findIndex((line,index)=>index>=start && /^## /.test(line));
   const notes=lines.slice(start,following<0?lines.length:following).join('\n').trim();
   if(!notes)throw new Error('Release notes must not be empty');
-  return {version,tag,notes};
+  return {version,tag,notes,prerelease};
+}
+function validateReadme(readme,version,tag){
+  const readmeVersions=[...readme.matchAll(/\*\*当前程序版本：([^*]+)\*\*/g)];
+  if(readmeVersions.length!==1 || readmeVersions[0][1]!==version)throw new Error('README current version does not match package.json');
+  // Any repository's release link counts, so a fork or a renamed repository is checked the same way.
+  const links=[...readme.matchAll(/https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/releases\/(?:tag|download)\/([^/\s)"#?]+)/g)];
+  if(links.some(match=>match[1]!==tag) || /https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/releases\/latest\/download\//.test(readme))throw new Error('README release links must use the exact current version tag');
+  if([...readme.matchAll(/claude-niang-v([^\s/"`]+)-windows\.zip/g)].some(match=>match[1]!==version))throw new Error('README ZIP filenames must match package.json');
+  if([...readme.matchAll(/img\.shields\.io\/badge\/Release-v([0-9.]+)-/g)].some(match=>match[1]!==version))throw new Error('README release badge must match package.json');
 }
 export function verifyReleaseAssets(dir,version,expectedMcpbSha256){
   const names=assetNames(version),entries=fs.readdirSync(dir,{withFileTypes:true});
@@ -101,10 +109,11 @@ function newerVersion(version,latestTag){
 export async function publishRelease({metadata,assets,sha,repository,event,ref,request}){
   if(event!=='workflow_dispatch' || ref!=='refs/heads/main' || !/^[a-f0-9]{40}$/.test(sha??'') || !/^[\w.-]+\/[\w.-]+$/.test(repository??''))throw new Error('Releases must be dispatched from main at a full commit SHA');
   const {version,tag,notes}=metadata,expected=assetNames(version);
-  if(!stableVersion.test(version) || tag!=='v'+version || assets.length!==3 || new Set(assets.map(a=>a.name)).size!==3 || assets.some(a=>!expected.includes(a.name)))throw new Error('Invalid release metadata or asset set');
-  const api='/repos/'+repository,title='Claude 娘社区版 '+tag+' · Windows';
+  if(!releaseVersion.test(version) || tag!=='v'+version || assets.length!==3 || new Set(assets.map(a=>a.name)).size!==3 || assets.some(a=>!expected.includes(a.name)))throw new Error('Invalid release metadata or asset set');
+  const prerelease=isBetaVersion(version);
+  const api='/repos/'+repository,title='Claude 娘社区版 '+tag+' · Windows'+(prerelease?'（测试版）':'');
   const body=notes+'\n\n<!-- claude-niang-release '+sha+' '+tag+' -->';
-  const ownedDraft=value=>value?.draft===true && value.prerelease===false && value.immutable!==true && value.tag_name===tag && value.target_commitish===sha && value.name===title && value.body===body;
+  const ownedDraft=value=>value?.draft===true && value.prerelease===prerelease && value.immutable!==true && value.tag_name===tag && value.target_commitish===sha && value.name===title && value.body===body;
   const tagSha=async()=>{
     let object=(await request('GET',api+'/git/ref/tags/'+tag,{allowMissing:true}))?.object;
     for(let depth=0;object?.type==='tag' && depth<5;depth++)object=(await request('GET',api+'/git/tags/'+object.sha))?.object;
@@ -123,7 +132,7 @@ export async function publishRelease({metadata,assets,sha,repository,event,ref,r
   if(release && !ownedDraft(release))throw new Error('An existing published release or unowned/modified draft uses this tag; nothing will be overwritten');
   if(release && !existingSha)throw new Error('Existing draft has lost its tag; restore and verify it manually');
   if(!existingSha)await request('POST',api+'/git/refs',{json:{ref:'refs/tags/'+tag,sha}});
-  if(!release)release=await request('POST',api+'/releases',{json:{tag_name:tag,target_commitish:sha,name:title,body,draft:true,prerelease:false,make_latest:'false'}});
+  if(!release)release=await request('POST',api+'/releases',{json:{tag_name:tag,target_commitish:sha,name:title,body,draft:true,prerelease,make_latest:'false'}});
   const assertOwnedDraft=async()=>{
     const current=await request('GET',api+'/releases/'+release.id);
     if(current?.id!==release.id || !ownedDraft(current))throw new Error('Release was published or its draft was modified; stop without further changes');
@@ -145,7 +154,9 @@ export async function publishRelease({metadata,assets,sha,repository,event,ref,r
   if(await tagSha()!==sha)throw new Error('Tag changed during upload; release remains a draft');
   const latest=await request('GET',api+'/releases/latest',{allowMissing:true});
   await assertOwnedDraft();
-  const published=await request('PATCH',api+'/releases/'+release.id,{json:{draft:false,make_latest:!latest || newerVersion(version,latest.tag_name)?'true':'false'}});
+  // A test build never becomes Latest.
+  const makeLatest=!prerelease && (!latest || newerVersion(version,latest.tag_name));
+  const published=await request('PATCH',api+'/releases/'+release.id,{json:{draft:false,make_latest:makeLatest?'true':'false'}});
   if(published.draft || published.tag_name!==tag)throw new Error('GitHub did not confirm publication');
   return {tag,sha,url:published.html_url,assets:uploaded.map(({name,digest})=>({name,digest}))};
 }

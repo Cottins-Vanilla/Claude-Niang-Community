@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Exact program version tag, for example v1.3.4'
+        description: 'Exact version tag: vX.Y.Z (formal) or vX.Y.Z-beta.N (test build, published as a pre-release)'
         required: true
         type: string
 permissions:

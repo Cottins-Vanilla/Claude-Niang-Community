@@ -4,11 +4,34 @@
 
 2.0.0 起是社区维护版（[Cottins-Vanilla/Claude-Niang-Community](https://github.com/Cottins-Vanilla/Claude-Niang-Community)）。1.3.3 及更早的版本由原作者发布，下载链接指向原仓库 [Gryphus-Triune/Claude-Niang](https://github.com/Gryphus-Triune/Claude-Niang)。
 
-## 未发布
+## 2.1.0-beta.1 — 2026-11-25
+
+测试版：新增「关于 Claude娘」菜单和自动检查更新，语录编辑窗口换新样式，内置语录更新为 54 句。
+
+**下载**：在 [v2.1.0-beta.1 发布页](https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/tag/v2.1.0-beta.1) 的 Assets 中选择 `claude-niang-v2.1.0-beta.1-windows.zip`（Windows 完整包，含挂件和可选的 Claude 桌面扩展）。`.sha256` 用于核对下载是否完整；`claude-niang-usage.mcpb` 只用于单独更新桌面扩展。
+
+### 新功能
+- 右键菜单新增「关于 Claude娘」（在「显示与位置」下面）：查看版本、立即检查更新、开关自动更新、选择更新范围（正式版 / 测试版）。检查结果显示在 Claude 窗口右下角的卡片里（不会挡住 Claude娘），约 2.5 秒后淡出；发现新版本时停留约 4.5 秒，可以点「是，去更新」打开发布页。
+- 新增自动检查更新：每次启动挂件、Claude娘第一次出现时检查一次；有新版本时 Claude娘会弹出约 5 秒的气泡提醒。只读取 GitHub 上公开的版本列表，不会自动下载或安装，可以在「关于 Claude娘」里关闭。
+
+### 改进
+- 「编辑我的语录」窗口改为和用量管理窗口一致的样式：无系统标题栏、圆角、暖色配色和统一按钮，显示当前句数，可以用 Ctrl+S 保存。
+- 用量管理窗口左上角的「Claude娘」下面显示版本号。
+- 内置语录更新为 54 句（新增 20 句，删去 8 句），并重新调整气泡里的换行，长句的字更大、更好读。
 
 ### 其他
-- 同步原作者对许可与署名的整理：新增 `CHARACTER-NOTICE.txt`（默认角色图及衍生图标的使用说明），LICENSE 增加 Gryphus-Triune 对 Claude 适配部分的署名，相关源码文件加上版权行，桌面扩展作者改为 Gryphus-Triune；发布包和桌面扩展都附带角色图片使用说明。
+- 支持发布测试版 `vX.Y.Z-beta.N`：发布为预发布，不会成为 Latest。
+- 同步原作者对许可与署名的整理：新增 `CHARACTER-NOTICE.txt`（默认角色图及衍生图标的使用说明），LICENSE 增加 Gryphus-Triune 对 Claude 适配部分的署名，桌面扩展作者改为 Gryphus-Triune；发布包和桌面扩展都附带角色图片使用说明。
 - 原仓库已迁到 The-Scales-of-Themis/Claude-Niang，README 中的链接和社区版说明随之更新。
+
+### 更新方法
+先运行旧目录的「停用Claude娘.cmd」，把新版本覆盖到同一个文件夹（保留 `claude-niang\installation.json`），再运行「安装Claude娘.cmd」。装过桌面扩展的，再双击一次新的 `.mcpb`。
+
+想继续收到测试版提醒，在右键「关于 Claude娘」里把更新范围设为「测试版」；默认只提醒正式版。
+
+### 已知问题
+- 检查结果卡片在 Claude娘挡住 Claude 窗口右下角时会自动让开，这一情况还没有在实机上完整测试。
+- 多屏、混合 DPI 和 Windows 10 上的卡片位置是适配目标，尚未实机验证。
 
 ## 2.0.0 — 2026-11-24
 

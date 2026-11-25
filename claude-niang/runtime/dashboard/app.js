@@ -161,7 +161,7 @@ function renderHeader(){
   const refresh=$('refresh');
   if(state.refreshingSince && Date.now()-state.refreshingSince>25000)state.refreshingSince=0;
   refresh.classList.toggle('busy',!!state.refreshingSince);
-  $('version').textContent=state.version?'Claude 娘 '+state.version:'';
+  $('brand-version').textContent=state.version?'v'+state.version:'';
   $('foot-left').textContent='Claude 娘'+(state.version?' '+state.version:'');
   const scanned=state.index?.scannedAt;
   $('foot-right').textContent=state.scanning?'正在更新本机用量…':scanned?'本机用量更新于 '+clock(scanned):'';
@@ -391,6 +391,39 @@ document.querySelectorAll('#chart-mode button').forEach(b=>b.addEventListener('c
 $('session-search').addEventListener('input',event=>{state.search=event.target.value;state.page=0;render();});
 $('export-csv').addEventListener('click',()=>exportData('csv'));
 $('export-json').addEventListener('click',()=>exportData('json'));
+
+// --- easter egg: poke the logo -----------------------------------------------------
+// Each poke squishes her and lets a few hearts float up with a line; five quick
+// pokes in a row make her spin. Nothing is saved or sent anywhere.
+const POKE_LINES=['别戳啦，会掉 token 的～','你说得完全正确！……诶，你刚才说了什么？','再戳就要收费了！按 token 计！',
+  '嘿嘿，被你发现了～','我在帮你盯着额度呢。','才、才不是在等你戳我……','今天也一起好好写代码吧！','有用、诚实、无害，还有可爱～'];
+const brandLogo=$('brand-logo'),brandSay=$('brand-say');
+let pokes=[],lastLine=-1,sayTimer=0;
+function pokeBurst(count){
+  const brand=brandLogo.parentElement,b=brand.getBoundingClientRect(),r=brandLogo.getBoundingClientRect();
+  for(let i=0;i<count;i++){
+    const angle=-Math.PI/2+(Math.random()-.5)*Math.PI*1.1,dist=34+Math.random()*30;
+    const pop=el('span',{class:'brand-pop',text:Math.random()<.65?'♥':'✦'});
+    pop.style.left=(r.left-b.left+r.width/2)+'px';pop.style.top=(r.top-b.top+r.height/2)+'px';
+    pop.style.setProperty('--dx',(Math.cos(angle)*dist).toFixed(1)+'px');pop.style.setProperty('--dy',(Math.sin(angle)*dist).toFixed(1)+'px');
+    pop.style.setProperty('--rot',((Math.random()-.5)*60).toFixed(0)+'deg');pop.style.fontSize=(11+Math.random()*7).toFixed(1)+'px';
+    pop.style.animationDelay=(i*35)+'ms';
+    pop.addEventListener('animationend',()=>pop.remove());brand.append(pop);
+  }
+}
+function pokeSay(text){
+  brandSay.textContent=text;brandSay.hidden=false;brandSay.classList.remove('show');void brandSay.offsetWidth;brandSay.classList.add('show');
+  clearTimeout(sayTimer);sayTimer=setTimeout(()=>{brandSay.classList.remove('show');brandSay.hidden=true;},1900);
+}
+brandLogo.addEventListener('click',()=>{
+  const now=Date.now();pokes=pokes.filter(t=>now-t<1800);pokes.push(now);
+  const spin=pokes.length>=5;if(spin)pokes=[];
+  brandLogo.classList.remove('poke','spin');void brandLogo.offsetWidth;brandLogo.classList.add(spin?'spin':'poke');
+  pokeBurst(spin?10:5);
+  let line=Math.floor(Math.random()*POKE_LINES.length);if(line===lastLine)line=(line+1)%POKE_LINES.length;lastLine=line;
+  pokeSay(spin?'好啦好啦，给你转一圈～':POKE_LINES[line]);
+});
+brandLogo.addEventListener('animationend',()=>brandLogo.classList.remove('poke','spin'));
 
 function render(){
   try{renderHeader();if(state.view==='ledger')renderLedger();else renderOverview();}
