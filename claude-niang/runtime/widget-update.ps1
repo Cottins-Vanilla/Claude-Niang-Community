@@ -20,10 +20,9 @@ function Set-WidgetUpdateSettings([bool]$AutoCheck,[bool]$Beta){
   Update-WidgetUpdateMenu
 }
 
+# One line for every newer release, formal or beta.
 function Get-WidgetUpdateNoticeText($Result){
-  $version='v'+[string]$Result.latest
-  if($Result.prerelease){return "测试版 $version 出炉啦～`n想尝鲜的话，右键「关于 Claude娘」看看？"}
-  return "新版本 $version 到啦～`n才、才不是特意来告诉你的！"
+  return "新版本到啦～`n才、才不是特意来告诉你的！"
 }
 
 # --- automatic check at start ------------------------------------------------------

@@ -588,7 +588,7 @@ public static class CnLaunchWindows{
       Tick-WidgetUpdateCheck $true
       for($i=0;$i-lt 100 -and $script:updateCheck.state-eq 'running';$i++){Start-Sleep -Milliseconds 50;Tick-WidgetUpdateCheck $true}
       Assert ($script:updateCheck.state-eq 'done') ('Check did not finish: '+$script:updateCheck.state)
-      Assert ($script:shownNotices.Count-eq 1 -and $script:shownNotices[0]-match 'v2\.1\.0') ('Bubble: '+($script:shownNotices-join ' | '))
+      Assert ($script:shownNotices.Count-eq 1 -and $script:shownNotices[0]-eq "新版本到啦～`n才、才不是特意来告诉你的！") ('Bubble: '+($script:shownNotices-join ' | '))
       Tick-WidgetUpdateCheck $true;Assert ($script:shownNotices.Count-eq 1) 'Checked again in the same widget run'
       [ClaudeNiangUpdate]::SaveSettings($script:dataDir,$false,$false)
       $script:updateCheck=@{state='idle';task=$null};$script:shownNotices=@()
