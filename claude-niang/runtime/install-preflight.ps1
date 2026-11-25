@@ -72,7 +72,7 @@ function Get-WidgetInstallPreflight {
   foreach($file in $required){if(!(Test-Path -LiteralPath (Join-Path $sourceDir $file) -PathType Leaf)){throw ('缺少文件：'+$file.Replace('/','\')+'。请重新完整解压压缩包。')}}
   foreach($path in @($appDir,$sourceDir,$dataDir)){Assert-WidgetNoReparsePoint $path}
   $package=Read-WidgetJsonFile (Join-Path $sourceDir 'package.json')
-  if(!$package.version -or $package.version-notmatch '^\d+\.\d+\.\d+$'){throw 'package.json 版本无效。'}
+  if(!$package.version -or $package.version-notmatch '^\d+\.\d+\.\d+(-beta\.[1-9]\d*)?$'){throw 'package.json 版本无效。'}
   $startup=Get-WidgetKnownFolderPath ([Guid]'B97D20BB-F46A-4C97-BA10-5E3608430854');if(!$startup){throw '找不到 Windows 启动文件夹。'}
   $shortcut=Join-Path $startup 'Claude Niang.lnk'
   $config=[ordered]@{version=$package.version;appDir=$appDir;dataDir=$dataDir;webviewDir=$webviewDir;nodePath=$node.path;nodeVersion=$node.version;startupShortcut=$shortcut;installedAt=[DateTime]::UtcNow.ToString('o')}

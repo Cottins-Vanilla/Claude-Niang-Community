@@ -24,7 +24,9 @@ test('README version and linked distribution resources match the release',()=>{
   const readme=fs.readFileSync(path.join(root,'README.md'),'utf8');
   const version=readme.match(/\*\*当前程序版本：([^*]+)\*\*/);
   assert.ok(version,'README must identify the current program version');
-  assert.equal(version[1],packageInfo.version);
+  // A beta leaves the README on the latest formal release.
+  if(/-beta\.\d+$/.test(packageInfo.version))assert.match(version[1],/^\d+\.\d+\.\d+$/);
+  else assert.equal(version[1],packageInfo.version);
   const files=releaseFiles(root);
   for(const resource of ['docs/screenshot.png','docs/customization.md','LICENSE','CHARACTER-NOTICE.txt','claude-niang/assets/quotes-LICENSE.txt']){
     assert.ok(readme.includes(resource),'README should link to '+resource);
