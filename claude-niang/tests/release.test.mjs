@@ -66,7 +66,7 @@ test('release metadata requires one exact stable version across the tag, manifes
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),'cn-release-metadata-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));
   const write=(name,text)=>{const file=path.join(dir,name);fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,text);};
   const reset=()=>{write('claude-niang/package.json','{"version":"2.3.4"}');write('claude-niang/extension/manifest.json','{"version":"2.3.4"}');write('README.md','**当前程序版本：2.3.4**');write('CHANGELOG.md','## 2.3.4 — today\n\nFixed a bug.\n\n## 2.3.3 — before\nOld notes.\n');};
-  reset();assert.deepEqual(validateReleaseMetadata(dir,'v2.3.4'),{version:'2.3.4',tag:'v2.3.4',notes:'Fixed a bug.'});
+  reset();assert.deepEqual(validateReleaseMetadata(dir,'v2.3.4'),{version:'2.3.4',tag:'v2.3.4',notes:'Fixed a bug.',prerelease:false});
   for(const tag of ['2.3.4','v2.3.5','v02.3.4','v2.3.4-repack.1','v2.3.4-beta'])assert.throws(()=>validateReleaseMetadata(dir,tag));
   for(const [file,text] of [['claude-niang/extension/manifest.json','{"version":"2.3.3"}'],['README.md','**当前程序版本：2.3.3**'],['CHANGELOG.md','## 2.3.4-repack.1\nWrong section'],['CHANGELOG.md','## 2.3.4\n\n## 2.3.3\nOld'],['CHANGELOG.md','## 2.3.4\nA\n## 2.3.4\nB']]){reset();write(file,text);assert.throws(()=>validateReleaseMetadata(dir,'v2.3.4'),file);}
   for(const stale of ['https://github.com/Gryphus-Triune/Claude-Niang/releases/tag/v2.3.3','https://github.com/Gryphus-Triune/Claude-Niang/releases/download/v2.3.3/claude-niang-usage.mcpb',
@@ -86,16 +86,16 @@ test('release assets reject extra files, bad ZIP checksums and an MCPB that diff
   fs.writeFileSync(path.join(dir,zip),'changed');assert.throws(()=>verifyReleaseAssets(dir,'2.3.4',hash('extension')),/ZIP checksum/);
 });
 
-function publishingFixture(){
-  const sha='a'.repeat(40),api='/repos/example/claude-niang',metadata={version:'2.3.4',tag:'v2.3.4',notes:'Fixed a bug.'};
-  const names=['claude-niang-v2.3.4-windows.zip','claude-niang-v2.3.4-windows.zip.sha256','claude-niang-usage.mcpb'];
+function publishingFixture(version='2.3.4'){
+  const tag='v'+version,sha='a'.repeat(40),api='/repos/example/claude-niang',metadata={version,tag,notes:'Fixed a bug.'};
+  const names=['claude-niang-'+tag+'-windows.zip','claude-niang-'+tag+'-windows.zip.sha256','claude-niang-usage.mcpb'];
   const assets=names.map((name,i)=>({name,file:name,size:i+10,sha256:String(i+1).repeat(64)}));
   const state={tag:null,release:null,assets:[],calls:[],latest:{tag_name:'v2.3.3'},uploads:0,failUpload:0,tamper:false,moveMain:false,moveTag:false};
   const request=async(method,route,options={})=>{
     state.beforeRequest?.(method,route);
     state.calls.push({method,route,json:options.json});
     if(route===api+'/git/ref/heads/main')return {object:{type:'commit',sha:state.moveMain && state.uploads?'b'.repeat(40):sha}};
-    if(route===api+'/git/ref/tags/v2.3.4')return state.tag?{object:{type:'commit',sha:state.moveTag && state.uploads?'b'.repeat(40):state.tag}}:null;
+    if(route===api+'/git/ref/tags/'+tag)return state.tag?{object:{type:'commit',sha:state.moveTag && state.uploads?'b'.repeat(40):state.tag}}:null;
     if(route.startsWith(api+'/releases?'))return state.release?[state.release]:[];
     if(route===api+'/releases/latest')return state.latest;
     if(route===api+'/git/refs' && method==='POST'){assert.equal(state.tag,null);state.tag=options.json.sha;return {};}
@@ -178,4 +178,19 @@ test('final publication revalidates the complete draft ownership after uploads',
 test('publishing an old or equal version never takes Latest from a newer or manually named release',async()=>{
   for(const tag of ['v9.0.0','v2.3.4','v2.3.4-repack.1','manual-choice']){const f=publishingFixture();f.state.latest={tag_name:tag};await f.run();assert.equal(f.state.release.make_latest,'false',tag);}
   const f=publishingFixture();f.state.latest=null;await f.run();assert.equal(f.state.release.make_latest,'true');
+});
+
+test('a beta (vX.Y.Z-beta.N) is validated without touching the README and published as a pre-release that never takes Latest',async t=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'cn-release-beta-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));
+  const write=(name,text)=>{const file=path.join(dir,name);fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file,text);};
+  write('claude-niang/package.json','{"version":"2.4.0-beta.1"}');write('claude-niang/extension/manifest.json','{"version":"2.4.0-beta.1"}');
+  write('README.md',['**当前程序版本：2.3.4**','https://github.com/someone/Claude-Niang-Community/releases/tag/v2.3.4'].join('\n'));
+  write('CHANGELOG.md',['## 2.4.0-beta.1 — today','','Try the new window.','','## 2.3.4 — before','Old.',''].join('\n'));
+  assert.deepEqual(validateReleaseMetadata(dir,'v2.4.0-beta.1'),{version:'2.4.0-beta.1',tag:'v2.4.0-beta.1',notes:'Try the new window.',prerelease:true});
+  for(const bad of ['2.4.0-beta.1','v2.4.0-beta','v2.4.0-beta.0','v2.4.0-rc.1','v2.4.0'])assert.throws(()=>validateReleaseMetadata(dir,bad),bad);
+  write('claude-niang/package.json','{"version":"2.4.0-beta"}');assert.throws(()=>validateReleaseMetadata(dir,'v2.4.0-beta'),/beta\.N/);
+  const f=publishingFixture('2.4.0-beta.1');await f.run();
+  assert.equal(f.state.release.prerelease,true);assert.equal(f.state.release.draft,false);assert.equal(f.state.release.make_latest,'false');
+  assert.match(f.state.release.name,/v2\.4\.0-beta\.1 · Windows（测试版）$/);
+  const formal=publishingFixture('2.4.0');await formal.run();assert.equal(formal.state.release.prerelease,false);assert.equal(formal.state.release.make_latest,'true');
 });
