@@ -629,7 +629,9 @@ public static class CnLaunchWindows{
     try{
       foreach($view in @('overview','ledger-end')){
         $png=Join-Path $dash ($view+'.png')
-        $out=& $ps -NoProfile -STA -ExecutionPolicy Bypass -File $hostScript -ConfigPath $config -Snapshot $png -View $view -Width 1600 -Height 1200 2>&1
+        # The overview opens the way the widget opens it (values passed in); the ledger reads the config.
+        $known=if($view-eq 'overview'){@('-DataDir',$state,'-NodePath',(Get-Command node -ErrorAction Stop).Source,'-Version','9.9.9')}else{@()}
+        $out=& $ps -NoProfile -STA -ExecutionPolicy Bypass -File $hostScript -ConfigPath $config @known -Snapshot $png -View $view -Width 1600 -Height 1200 2>&1
         Assert ($LASTEXITCODE-eq 0) ("$view failed: "+($out-join ' '))
         Assert ((Test-Path -LiteralPath $png) -and (Get-Item -LiteralPath $png).Length-gt 20000) ("$view image missing or blank")
       }

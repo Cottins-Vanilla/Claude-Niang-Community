@@ -1,5 +1,8 @@
 ﻿param(
   [string]$ConfigPath='',
+  [string]$DataDir='',
+  [string]$NodePath='',
+  [string]$Version='',
   [string]$Snapshot='',
   [ValidateSet('overview','ledger','overview-end','ledger-end')][string]$View='overview',
   [int]$Width=0,
@@ -10,14 +13,18 @@
 # 由挂件右键「账户总览」启动，一个独立的小进程；关掉窗口就退出。
 #  -Snapshot <png>：不显示窗口，把页面渲染成图片后退出（预览和测试用）
 #  -CheckOnly：只检查组件能否加载，输出 JSON
+#  -DataDir / -NodePath / -Version：挂件直接传入已知的值，省掉读 JSON 的约 0.3 秒
+#  （PowerShell 第一次调用 ConvertFrom-Json 很慢）；不传时从安装配置里读。
 $ErrorActionPreference='Stop'
 $appDir=Split-Path $PSScriptRoot -Parent
 if(!$ConfigPath){$ConfigPath=Join-Path $appDir 'installation.json'}
-$config=[IO.File]::ReadAllText($ConfigPath,[Text.Encoding]::UTF8)|ConvertFrom-Json
-$dataDir=[string]$config.dataDir
+if(!$DataDir -or !$NodePath){
+  $config=[IO.File]::ReadAllText($ConfigPath,[Text.Encoding]::UTF8)|ConvertFrom-Json
+  $DataDir=[string]$config.dataDir;$NodePath=[string]$config.nodePath
+  try{$Version=[string]([IO.File]::ReadAllText((Join-Path $appDir 'package.json'),[Text.Encoding]::UTF8)|ConvertFrom-Json).version}catch{}
+}
+$dataDir=$DataDir;$nodePath=$NodePath;$version=$Version
 $dataRoot=Split-Path $dataDir -Parent
-$version=''
-try{$version=[string]([IO.File]::ReadAllText((Join-Path $appDir 'package.json'),[Text.Encoding]::UTF8)|ConvertFrom-Json).version}catch{}
 
 function Write-DashboardLog([string]$Message){
   try{
@@ -36,7 +43,7 @@ function Initialize-DashboardTypes {
   foreach($file in @(Get-ChildItem -LiteralPath $sdk -Recurse -File -Filter '*.dll' -ErrorAction SilentlyContinue)){try{Unblock-File -LiteralPath $file.FullName -ErrorAction Stop}catch{}}
   Add-Type -AssemblyName System.Windows.Forms,System.Drawing
   if(!('ClaudeNiangAssemblyResolver' -as [type])){
-    Add-Type -IgnoreWarnings -TypeDefinition @'
+    Import-DashboardAssembly 'assembly-resolver' @'
 using System;using System.IO;using System.Reflection;
 public static class ClaudeNiangAssemblyResolver {
  static string folder;
@@ -52,29 +59,30 @@ public static class ClaudeNiangAssemblyResolver {
   return File.Exists(path)?Assembly.LoadFrom(path):null;
  }
 }
-'@
+'@ @('System.dll')
   }
   [ClaudeNiangAssemblyResolver]::Register($sdk)
   $null=[Reflection.Assembly]::LoadFrom($core)
   $null=[Reflection.Assembly]::LoadFrom($forms)
   if(!('ClaudeNiangDashboard' -as [type])){
     $references=@('System.dll','System.Core.dll','System.Drawing.dll','System.Windows.Forms.dll',$core,$forms)
-    Import-DashboardAssembly $source $references
+    Import-DashboardAssembly 'dashboard-host' ([IO.File]::ReadAllText($source,[Text.Encoding]::UTF8)) $references
   }
   [ClaudeNiangDashboard]::PrepareLoader($sdk)
 }
 
-# Compile the window once and keep the DLL (keyed by the source), so opening it
-# does not wait for the C# compiler every time. Falls back to in-memory Add-Type.
-function Import-DashboardAssembly([string]$Source,[string[]]$References){
+# Compile the window (and the small assembly resolver) once and keep the DLL,
+# keyed by the source, so opening it does not wait for the C# compiler every
+# time. Falls back to in-memory Add-Type.
+function Import-DashboardAssembly([string]$Name,[string]$Source,[string[]]$References){
   $cacheDir=Join-Path $dataRoot 'cache';$temp=$null
   try{
     $sha=[Security.Cryptography.SHA256]::Create()
     try{
       $seed=[Text.Encoding]::UTF8.GetBytes(([Environment]::Version.ToString())+'|'+($References-join '|')+'|')
-      $key=([BitConverter]::ToString($sha.ComputeHash([byte[]]($seed+[IO.File]::ReadAllBytes($Source))))).Replace('-','').Substring(0,24).ToLowerInvariant()
+      $key=([BitConverter]::ToString($sha.ComputeHash([byte[]]($seed+[Text.Encoding]::UTF8.GetBytes($Source))))).Replace('-','').Substring(0,24).ToLowerInvariant()
     }finally{$sha.Dispose()}
-    $cached=Join-Path $cacheDir ('dashboard-host-'+$key+'.dll')
+    $cached=Join-Path $cacheDir ($Name+'-'+$key+'.dll')
     if(!(Test-Path -LiteralPath $cached)){
       $null=[IO.Directory]::CreateDirectory($cacheDir)
       $temp=Join-Path $cacheDir ('build-'+[Guid]::NewGuid().ToString('N')+'.dll')
@@ -83,7 +91,7 @@ function Import-DashboardAssembly([string]$Source,[string[]]$References){
         $parameters=New-Object System.CodeDom.Compiler.CompilerParameters
         foreach($reference in $References){$null=$parameters.ReferencedAssemblies.Add($reference)}
         $parameters.OutputAssembly=$temp;$parameters.GenerateInMemory=$false;$parameters.CompilerOptions='/optimize+'
-        $result=$provider.CompileAssemblyFromSource($parameters,[IO.File]::ReadAllText($Source,[Text.Encoding]::UTF8))
+        $result=$provider.CompileAssemblyFromSource($parameters,$Source)
         if($result.Errors.HasErrors){throw ((@($result.Errors|Where-Object{!$_.IsWarning}|ForEach-Object{$_.ToString()}))-join "`n")}
       }finally{$provider.Dispose()}
       try{[IO.File]::Move($temp,$cached);$temp=$null}catch{if(!(Test-Path -LiteralPath $cached)){throw}}
@@ -91,7 +99,7 @@ function Import-DashboardAssembly([string]$Source,[string[]]$References){
     $null=[Reflection.Assembly]::LoadFrom($cached)
   }catch{
     if($_.Exception.Message-match 'error CS'){throw}
-    Add-Type -IgnoreWarnings -ReferencedAssemblies $References -TypeDefinition ([IO.File]::ReadAllText($Source,[Text.Encoding]::UTF8))
+    Add-Type -IgnoreWarnings -ReferencedAssemblies $References -TypeDefinition $Source
   }finally{if($temp -and (Test-Path -LiteralPath $temp)){Remove-Item -LiteralPath $temp -Force -ErrorAction SilentlyContinue}}
 }
 
@@ -109,7 +117,6 @@ try{
   [ClaudeNiangDashboard]::EnableDpiAwareness()
   [Windows.Forms.Application]::EnableVisualStyles()
   $profileDir=Join-Path $dataRoot 'webview-dashboard'
-  $nodePath=[string]$config.nodePath
   $form=[ClaudeNiangDashboard]::new($appDir,$dataDir,[IO.Path]::GetFullPath($ConfigPath),$nodePath,$profileDir,$version,$Snapshot,$View,$Width,$Height)
   [Windows.Forms.Application]::Run($form)
   if($Snapshot){
