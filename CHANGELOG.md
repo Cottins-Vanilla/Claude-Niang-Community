@@ -4,6 +4,24 @@
 
 2.0.0 起是社区维护版（[Cottins-Vanilla/Claude-Niang-Community](https://github.com/Cottins-Vanilla/Claude-Niang-Community)）。1.3.3 及更早的版本由原作者发布，下载链接指向原仓库 [Gryphus-Triune/Claude-Niang](https://github.com/Gryphus-Triune/Claude-Niang)。
 
+## 2.1.0-beta.2 — 2026-11-26
+
+测试版：鼠标停在 Claude娘身上时不再弹出操作说明。
+
+**下载**：在 [v2.1.0-beta.2 发布页](https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/tag/v2.1.0-beta.2) 的 Assets 中选择 `claude-niang-v2.1.0-beta.2-windows.zip`（Windows 完整包，含挂件和可选的 Claude 桌面扩展）。`.sha256` 用于核对下载是否完整；`claude-niang-usage.mcpb` 只用于单独更新桌面扩展。
+
+### 改进
+- 鼠标停在 Claude娘身上时不再弹出「点角色看额度……右键设置」的操作说明；气泡上的语录原文和额度明细提示保留。
+
+### 更新方法
+先运行旧目录的「停用Claude娘.cmd」，把新版本覆盖到同一个文件夹（保留 `claude-niang\installation.json`），再运行「安装Claude娘.cmd」。装过桌面扩展的，再双击一次新的 `.mcpb`。
+
+想继续收到测试版提醒，在右键「关于 Claude娘」里把更新范围设为「测试版」；默认只提醒正式版。
+
+### 已知问题
+- 检查结果卡片在 Claude娘挡住 Claude 窗口右下角时会自动让开，这一情况还没有在实机上完整测试。
+- 多屏、混合 DPI 和 Windows 10 上的卡片位置是适配目标，尚未实机验证。
+
 ## 2.1.0-beta.1 — 2026-11-25
 
 测试版：新增「关于 Claude娘」菜单和自动检查更新，语录编辑窗口换新样式，内置语录更新为 54 句。
