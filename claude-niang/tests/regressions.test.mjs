@@ -7,7 +7,7 @@ import {EventEmitter} from 'node:events';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {normalizeClaudeBundle,normalizeUsage,readUsage,newOrganizationCache,classifyRequest} from '../runtime/claude-usage.mjs';
-import {mergeUsageSnapshot,createFailurePause,readRefreshRequest} from '../runtime/refresh-queue.mjs';
+import {mergeUsageSnapshot,createFailurePause,readRefreshRequest,createResetRead} from '../runtime/refresh-queue.mjs';
 import {advanceLedger,updateDailyLedger,localDay} from '../runtime/daily.mjs';
 import {describe,negotiateVersion} from '../runtime/mcp.mjs';
 import * as fx from './fixtures/bundles.mjs';
@@ -85,6 +85,22 @@ test('the third failed read in a row starts a 30-second pause; a success, the pa
   now=29999;assert.equal(pause.remaining(),1);now=30000;assert.equal(pause.remaining(),0);
   pause.record(false);pause.record(false);assert.equal(pause.remaining(),0,'two new failures after a pause are not enough');
   assert.equal(pause.record(false),true);pause.reset();assert.equal(pause.remaining(),0);assert.equal(pause.failures,0);
+});
+test('a passed reset time asks for one read a minute later, one retry three minutes on, and nothing after a later read',()=>{
+  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'cn-reset-')),file=path.join(dir,'reset-read.json');
+  let now=10_000_000;const reader=()=>createResetRead(file,{now:()=>now});let reset=reader();
+  const status={ok:true,accountKey:'acct',observedAt:now-3600000,windows:[{kind:'session',resetsAt:now/1000},{kind:'weekly',resetsAt:now/1000+86400},{kind:'extra',resetsAt:null}]};
+  assert.equal(reset.due(status),null,'read before the one-minute delay');
+  now+=59999;assert.equal(reset.due(status),null);now+=1;
+  const key=reset.due(status);assert.ok(key);assert.equal(reset.started(key),1);
+  assert.equal(reset.due(status),null,'second try came at once');
+  now+=180000;reset=reader();assert.equal(reset.due(status),key,'the retry was lost on restart');assert.equal(reset.started(key),2);
+  now+=600000;assert.equal(reset.due(status),null,'more than two tries');
+  assert.equal(reset.due({...status,observedAt:now-1000}),null,'a read after the reset still counted as due');
+  assert.equal(reset.due({...status,ok:false}),null);assert.equal(reset.due({...status,loggedIn:false}),null);
+  const weekly={...status,windows:[...status.windows,{kind:'weekly',resetsAt:now/1000-60}]};
+  assert.notEqual(reset.due(weekly),null,'a different reset time reused the old tries');
+  fs.rmSync(dir,{recursive:true,force:true});
 });
 test('MCP answers a supported protocol version and falls back to its newest one',()=>{
   assert.equal(negotiateVersion('2025-03-26'),'2025-03-26');

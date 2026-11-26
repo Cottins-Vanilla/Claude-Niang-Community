@@ -188,15 +188,16 @@ function Initialize-WidgetSettingsMenu {
     $script:settingsMenuUi.Orgs=Add-SettingsSubmenu '切换组织' {
       $empty=Add-SettingsAction '（登录后显示）' {} -ReturnItem;$empty.IsEnabled=$false
     } -ReturnItem
-    $hint=New-SettingsText '额度仅在手动操作时读取，启动和恢复窗口不会联网刷新。' 11.5 '#9A7766'
+    $hint=New-SettingsText '额度平时只在手动操作时读取；开启「重置后自动读取」时，到点会自动读一次。' 11.5 '#9A7766'
     $hint.TextWrapping=[Windows.TextWrapping]::Wrap;Add-SettingsPanel $hint -Passive
 
     Add-SettingsDivider
     Add-SettingsAction '退出登录' {Start-WidgetLogout} -Description '只清除 Claude 娘里的登录，不影响桌面端'
   } -ReturnItem
   $script:settingsMenuUi.Alerts=Add-SettingsSubmenu '额度提醒' {
-    $script:settingsMenuUi.LowQuota=Add-SettingsAction '低额度提醒' {param($sender,$event)$script:lowQuotaAlert=[bool]$sender.IsChecked;Save-Settings} -Description '手动读取后，5 小时剩 20%、每周剩 15% 时提醒' -Checkable -ReturnItem
-    $script:settingsMenuUi.ResetAlert=Add-SettingsAction '额度重置提醒' {param($sender,$event)$script:resetAlert=[bool]$sender.IsChecked;Save-Settings} -Description '手动读取后发现额度重置时提醒' -Checkable -ReturnItem
+    $script:settingsMenuUi.LowQuota=Add-SettingsAction '低额度提醒' {param($sender,$event)$script:lowQuotaAlert=[bool]$sender.IsChecked;Save-Settings} -Description '读取到新额度后，5 小时剩 20%、每周剩 15% 时提醒' -Checkable -ReturnItem
+    $script:settingsMenuUi.ResetAlert=Add-SettingsAction '额度重置提醒' {param($sender,$event)$script:resetAlert=[bool]$sender.IsChecked;Save-Settings} -Description '读取后发现额度重置时提醒' -Checkable -ReturnItem
+    $script:settingsMenuUi.ResetAutoRead=Add-SettingsAction '重置后自动读取' {param($sender,$event)$script:resetAutoRead=[bool]$sender.IsChecked;Save-Settings} -Description '到重置时间后自动读一次，平时仍手动刷新' -Checkable -ReturnItem
   } -ReturnItem
   Add-SettingsDivider
   $script:settingsMenuUi.Character=Add-SettingsAction '更换形象' {Open-WidgetCharacterGallery} -ReturnItem

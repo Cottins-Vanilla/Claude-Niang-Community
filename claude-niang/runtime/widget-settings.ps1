@@ -46,6 +46,6 @@ function Save-Settings {
     soundOn=$script:soundOn;soundVolume=$script:soundVolume;bubbleTapAdvance=$script:bubbleTapAdvance;hideMenu=$script:hideMenu
     followHost=$script:followHost;desktopTopmost=$script:desktopTopmost;desktopLeft=$script:desktopLeft;desktopTop=$script:desktopTop
     characterId=$script:characterId;autoQuoteEnabled=$script:autoQuoteEnabled;autoQuoteIntervalSeconds=$script:autoQuoteIntervalSeconds
-    preferredOrg=$script:preferredOrg;lowQuotaAlert=$script:lowQuotaAlert;resetAlert=$script:resetAlert
+    preferredOrg=$script:preferredOrg;lowQuotaAlert=$script:lowQuotaAlert;resetAlert=$script:resetAlert;resetAutoRead=$script:resetAutoRead
   }
 }

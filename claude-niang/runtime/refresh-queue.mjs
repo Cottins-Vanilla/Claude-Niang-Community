@@ -63,3 +63,36 @@ export function readRefreshRequest(file) {
     return stat.mtimeNs.toString()+':'+fs.readFileSync(file,'utf8');
   } catch {return null;}
 }
+
+// "重置后自动读取": a quota window reaching its reset time is the one moment the
+// worker reads on its own. The key is the set of reset times that passed after
+// the last successful read, so a read that lands after them retires the key
+// even if claude.ai still reports the old time. Each key gets at most two
+// tries: the first a minute after the reset (or at once when catching up after
+// sleep or a restart) and one more three minutes later for a network that was
+// not back yet. The state is saved so a restarted worker does not try again.
+export function createResetRead(file,{delayMs=60000,retryMs=180000,tries=2,now=Date.now}={}) {
+  let state=null;
+  try{const saved=JSON.parse(fs.readFileSync(file,'utf8'));if(typeof saved?.key==='string')state=saved;}catch{}
+  function key(status,at){
+    if(!status?.ok || status.loggedIn===false || !Array.isArray(status.windows))return null;
+    const observed=Number(status.observedAt);
+    const passed=[...new Set(status.windows.map(window=>Number(window?.resetsAt))
+      .filter(seconds=>Number.isFinite(seconds) && seconds>0 && seconds*1000+delayMs<=at && !(Number.isFinite(observed) && seconds*1000<=observed)))].sort((a,b)=>a-b);
+    return passed.length?String(status.accountKey??'')+'@'+passed.join(','):null;
+  }
+  return {
+    due(status){
+      const at=now(),current=key(status,at);
+      if(!current)return null;
+      if(state?.key!==current)return current;
+      return state.count<tries && at>=state.nextAt?current:null;
+    },
+    started(current){
+      const count=state?.key===current?state.count+1:1;
+      state={key:current,count,nextAt:now()+retryMs};
+      try{fs.writeFileSync(file,JSON.stringify(state));}catch{}
+      return count;
+    }
+  };
+}

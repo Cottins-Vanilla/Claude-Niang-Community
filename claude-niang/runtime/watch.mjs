@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {readUsage,atomicJson,newOrganizationCache,failure,accountFingerprint} from './claude-usage.mjs';
-import {createRefreshQueue,mergeUsageSnapshot,readRefreshRequest,createFailurePause} from './refresh-queue.mjs';
+import {createRefreshQueue,mergeUsageSnapshot,readRefreshRequest,createFailurePause,createResetRead} from './refresh-queue.mjs';
 import {acquireWorkerLock,processAlive} from './worker-state.mjs';
 import {readJson} from './shared.mjs';
 import {readPendingRequests,completeRequests,cleanRefreshResults} from './refresh-client.mjs';
@@ -13,6 +13,8 @@ import {writeLog} from './log.mjs';
 
 // The timer manages local IPC/lifecycle only. Network reads require a click,
 // organization selection, or an explicit CLI/MCP request, never visibility.
+// The one exception is 「重置后自动读取」 (on unless turned off in settings.json):
+// once a quota window reaches its reset time, the widget's worker reads once.
 const configPath=process.argv[2],loaded=readJson(configPath);
 if(!loaded?.dataDir || !loaded?.appDir)throw new Error('Invalid widget installation configuration');
 const config={...loaded,configPath:path.resolve(configPath)},parentPid=Number(process.argv[3]??0);
@@ -38,6 +40,8 @@ const preferred=(unchanged=null)=>{
   const saved=readJson(file('settings.json'));if(!saved || typeof saved!=='object')return unchanged;
   const id=saved.preferredOrg;return typeof id==='string' && /^[0-9a-f-]{8,64}$/i.test(id)?id.toLowerCase():null;
 };
+const resetAutoRead=()=>readJson(file('settings.json'))?.resetAutoRead!==false;
+const resetRead=createResetRead(file('reset-read.json'));
 let preference=preferred(),sessionToken=readRefreshRequest(sessionFile),requestToken=readJson(consumedFile)?.token??null;
 let status=null,refresh,heartbeat,explicitWanted=false,generation=0,lastActivity=Date.now();
 let lastAttempt=0,lastAttemptGeneration=-1,lastCreditsAt=0,lastBootstrapAt=0,creditsRetryAt=0;
@@ -194,6 +198,12 @@ function tick(){
         complete(batch,ipc.takeBatch(),status);
       }else if(lastAttemptGeneration===generation && now-lastAttempt<MIN_EXPLICIT_GAP && status?.queryOk)complete(batch,ipc.takeBatch(),status);
       else void refresh.request();
+    }
+    // Only the widget's own worker (parentPid) reads at a reset; a rate limit or
+    // failure pause still wins, and the try is kept for after it ends.
+    if(parentPid && !refresh.busy && !explicitWanted && now>=blockedUntil && failurePause.remaining()===0){
+      const due=resetRead.due(status);
+      if(due && resetAutoRead()){const tries=resetRead.started(due);log('额度已到重置时间，自动读取一次'+(tries>1?'（第 '+tries+' 次）':''));void refresh.request();}
     }
     if(!parentPid && !active && !refresh.busy && batch.length===0 && ipc.pendingCount===0 && now-lastActivity>=30000)process.exit(0);
     cleanRefreshResults(config.dataDir,now);health();
