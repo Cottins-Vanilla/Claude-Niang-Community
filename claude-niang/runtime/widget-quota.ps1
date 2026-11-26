@@ -8,7 +8,7 @@ function Reset-Label($seconds){
   $d=[Math]::Floor($minutes/1440);$h=[Math]::Floor(($minutes%1440)/60);if($h-eq 0){return "$d 天后重置"};return "$d 天 $h 小时后重置"
 }
 function Format-ResetTime([long]$timestamp,[long]$now,[TimeZoneInfo]$timeZone=[TimeZoneInfo]::Local){
-  if($timestamp-le $now){return '重置已到，等待手动刷新'}
+  if($timestamp-le $now){return $(if($script:resetAutoRead){'重置已到，稍后自动读取'}else{'重置已到，等待手动刷新'})}
   $reset=[TimeZoneInfo]::ConvertTime([DateTimeOffset]::FromUnixTimeSeconds($timestamp),$timeZone)
   $today=[TimeZoneInfo]::ConvertTime([DateTimeOffset]::FromUnixTimeSeconds($now),$timeZone).Date
   $day=if($reset.Date-eq $today){'今日'}elseif($reset.Date-eq $today.AddDays(1)){'明日'}else{$reset.ToString('MM-dd')}
@@ -58,7 +58,7 @@ function Update-Quota {
   # the passing minute (staleness, today/tomorrow). A once-a-second tick with
   # none of these changed skips the redraw, which used to cost about 4 ms.
   $minutesLeft=@(foreach($window in @($script:status.windows)){if($window -and $window.resetsAt){[Math]::Ceiling(([double]$window.resetsAt-$now)/60)}})-join ','
-  $renderKey=@($script:statusStamp,[Math]::Floor($now/60),$minutesLeft,$script:quotaPage,$script:resetTimeMode,$script:collapsed,$script:bubbleMode)-join '|'
+  $renderKey=@($script:statusStamp,[Math]::Floor($now/60),$minutesLeft,$script:quotaPage,$script:resetTimeMode,$script:collapsed,$script:bubbleMode,$script:resetAutoRead)-join '|'
   if($renderKey-eq $script:quotaRenderKey -and [object]::ReferenceEquals($script:status,$script:quotaRenderStatus)){return}
   $script:quotaRenderKey=$renderKey;$script:quotaRenderStatus=$script:status
   $converter=[Windows.Media.BrushConverter]::new()
@@ -118,7 +118,7 @@ function Update-Quota {
     if($script:status.error -and (!$script:status.restored -or $script:status.errorCode)){$script:ui.Status.Text="刷新未成功：$($script:status.error) · 上次 $at";$dot='#D9A441'}
     elseif($script:status.restored){$script:ui.Status.Text="上次读取于 $at · 点 ↻ 手动刷新";$dot='#D9A441'}
     elseif($age-gt $stale){$mins=[Math]::Floor($age/60);$script:ui.Status.Text="$mins 分钟前的额度 · 点击 ↻ 刷新";$dot='#D9A441'}
-    else{$script:ui.Status.Text="$at 更新 · 仅手动刷新"}
+    else{$script:ui.Status.Text=if($script:resetAutoRead){"$at 更新 · 重置时自动读取"}else{"$at 更新 · 仅手动刷新"}}
   }
   $script:ui.LiveDot.Fill=$converter.ConvertFromString($dot)
   $script:ui.Status.ToolTip=$script:ui.Status.Text

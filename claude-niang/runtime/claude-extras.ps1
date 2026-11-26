@@ -5,6 +5,7 @@ $script:quotaPage=0
 $script:preferredOrg=$null
 $script:lowQuotaAlert=$true
 $script:resetAlert=$true
+$script:resetAutoRead=$true
 $script:loginProcess=$null;$script:loginResultFile=$null;$script:logoutProcess=$null;$script:logoutResultFile=$null
 $script:noticeState=$null;$script:noticeLastStamp="";$script:noticeQueue=@();$script:pendingNotice=$null;$script:nextQuoteOverride=$null
 
@@ -26,6 +27,7 @@ function Initialize-WidgetClaudeSettings($Settings){
     if($Settings.preferredOrg-is [string] -and $Settings.preferredOrg-match '^[0-9a-fA-F-]{8,64}$'){$script:preferredOrg=$Settings.preferredOrg}
     if($Settings.lowQuotaAlert-is [bool]){$script:lowQuotaAlert=$Settings.lowQuotaAlert}
     if($Settings.resetAlert-is [bool]){$script:resetAlert=$Settings.resetAlert}
+    if($Settings.resetAutoRead-is [bool]){$script:resetAutoRead=$Settings.resetAutoRead}
   }
   $script:noticeState=Read-WidgetNoticeState
 }
@@ -300,4 +302,5 @@ function Update-WidgetClaudeMenu {
   }
   $script:settingsMenuUi.LowQuota.IsChecked=$script:lowQuotaAlert
   $script:settingsMenuUi.ResetAlert.IsChecked=$script:resetAlert
+  $script:settingsMenuUi.ResetAutoRead.IsChecked=$script:resetAutoRead
 }

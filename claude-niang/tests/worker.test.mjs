@@ -60,6 +60,16 @@ test('startup and visibility never read, even with migrated automatic settings a
   s.click();await until(()=>s.status()?.ok);assert.equal(s.count(),1);assert.equal('pollMinutes' in s.status(),false);
   await wait(1000);assert.equal(s.count(),1);
 });
+test('a quota window that passed its reset reads once on its own, unless 重置后自动读取 is off',async t=>{
+  const saved=(s,extra={})=>atomicJson(path.join(s.dataDir,'status.json'),{ok:true,queryOk:true,observedAt:Date.now()-7200000,sessionEpoch:null,selectedOrg:fx.ORG_MAX,accountKey:'acct',
+    windows:[{kind:'session',used:80,remaining:20,resetsAt:Math.floor(Date.now()/1000)-120}],...extra});
+  const off=setup(t,{legacySettings:{resetAutoRead:false}});saved(off);await start(off);await wait(1700);
+  assert.equal(off.count(),0,'read with the setting turned off');assert.equal(off.status().restored,true);
+  const on=setup(t);saved(on);await start(on);
+  await until(()=>on.status()?.queryOk===true);assert.equal(on.count(),1);
+  await wait(1500);assert.equal(on.count(),1,'read more than once for one reset');
+  assert.match(fs.readFileSync(path.join(on.dataDir,'logs','claude-niang.log'),'utf8'),/额度已到重置时间，自动读取一次/);
+});
 test('worker-status.json stays fresh without being rewritten on every heartbeat, and reads are logged',async t=>{
   const s=setup(t),healthFile=path.join(s.dataDir,'worker-status.json');await start(s);
   const first=read(healthFile).at,firstSeq=read(healthFile).seq;await wait(1200);

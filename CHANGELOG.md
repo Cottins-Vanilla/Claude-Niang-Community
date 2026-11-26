@@ -4,6 +4,11 @@
 
 2.0.0 起是社区维护版（[Cottins-Vanilla/Claude-Niang-Community](https://github.com/Cottins-Vanilla/Claude-Niang-Community)）。1.3.3 及更早的版本由原作者发布，下载链接指向原仓库 [Gryphus-Triune/Claude-Niang](https://github.com/Gryphus-Triune/Claude-Niang)。
 
+## 未发布
+
+### 新功能
+- 新增「重置后自动读取」（右键 → 额度提醒，默认开启）：5 小时或每周额度到重置时间约 1 分钟后，挂件自动读取一次，不用再手动刷新。电脑睡眠或挂件没开时错过的重置，会在唤醒或下次启动时补读一次。读取失败只在 3 分钟后再试一次；限流和连续失败暂停期间不会读取。平时仍然只在手动操作时读取。
+
 ## 2.1.0-beta.2 — 2026-11-26
 
 测试版：鼠标停在 Claude娘身上时不再弹出操作说明。
