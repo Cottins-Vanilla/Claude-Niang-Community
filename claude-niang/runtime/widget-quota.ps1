@@ -100,7 +100,9 @@ function Update-Quota {
       $used=([double]$q.used).ToString('0.#');$left=([double]$q.remaining).ToString('0.#')
       $script:ui[$prefix+'Used'].Text=if($expired){"上次 $used%"}else{"已用 $used%"}
       $script:ui[$prefix+'Left'].Text=if($expired){'—'}else{"$left%"}
-      $script:ui[$prefix+'Reset'].Text=if($hasReset){Format-ResetDisplay ([long]$q.resetsAt) $now}else{'未提供重置时间'}
+      $script:ui[$prefix+'Reset'].Text=if($hasReset){Format-ResetDisplay ([long]$q.resetsAt) $now}elseif([double]$q.used-eq 0){'首次使用后开始计时'}else{'未提供重置时间'}
+      # 窗口清零后要等第一次使用才开始计时，这期间 Claude 不返回重置时间。
+      if(!$hasReset -and [double]$q.used-eq 0){$script:ui[$prefix+'Reset'].ToolTip='这个额度窗口还没开始计时，第一次使用 Claude 后才会有重置时间'}
       if($hasReset){$script:ui[$prefix+'Reset'].ToolTip='本机时间 '+[DateTimeOffset]::FromUnixTimeSeconds([long]$q.resetsAt).ToLocalTime().ToString('yyyy-MM-dd HH:mm zzz',[Globalization.CultureInfo]::InvariantCulture)+' 重置 · '+(Reset-Label ([double]$q.resetsAt-$now))}
       $script:ui[$prefix+'Bar'].Width=if($expired){0}else{184*[double]$q.remaining/100}
     }

@@ -144,6 +144,15 @@ try{
       Assert ($lines[1]-like '*：剩余 80%*' -and $lines[1]-notlike '*上次剩余*') 'Live quota was marked historical'
     }finally{$script:status=$previous}
   }
+  Case 'A window without a reset time says whether it has started' {
+    $previous=$script:status;$nowSeconds=[DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+    try{
+      $script:status=[pscustomobject]@{windows=@([pscustomobject]@{kind='session';label='5 小时';used=0;remaining=100;resetsAt=$null},[pscustomobject]@{kind='weekly';label='每周';used=12;remaining=88;resetsAt=$null})}
+      $lines=@(Get-WidgetClaudeDetailLines $nowSeconds)
+      Assert ($lines[0]-like '*剩余 100%*尚未开始计时*') 'An unstarted window still says the reset time is missing'
+      Assert ($lines[1]-like '*未提供重置时间*' -and $lines[1]-notlike '*尚未开始计时*') 'A used window without a reset time was called unstarted'
+    }finally{$script:status=$previous}
+  }
   Case 'Credit tooltip uses its own timestamp and preserves independent errors' {
     $previous=$script:status;$creditAt=1700000000000L
     try{

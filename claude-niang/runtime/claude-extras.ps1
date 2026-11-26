@@ -247,7 +247,7 @@ function Get-WidgetClaudeDetailLines([long]$NowSeconds){
       if($null-ne $window.limitMinor){$line+=' / 每月上限 '+(Format-WidgetMoney $window.limitMinor $window.currency)}
       $lines+=$line;continue
     }
-    $detail=if($window.resetsAt -and [long]$window.resetsAt-gt 0){Format-ResetTime ([long]$window.resetsAt) $NowSeconds}else{'未提供重置时间'}
+    $detail=if($window.resetsAt -and [long]$window.resetsAt-gt 0){Format-ResetTime ([long]$window.resetsAt) $NowSeconds}elseif([double]$window.used-eq 0){'尚未开始计时，首次使用后开始'}else{'未提供重置时间'}
     $expired=$window.resetsAt -and [long]$window.resetsAt-gt 0 -and [long]$window.resetsAt-le $NowSeconds
     $lines+=([string]$window.label+$(if($expired){'：上次剩余 '}else{'：剩余 '})+([double]$window.remaining).ToString('0.#')+'%，'+$detail)
   }

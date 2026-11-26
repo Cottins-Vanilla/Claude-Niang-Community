@@ -215,7 +215,7 @@ function accountCards(todayTokens){
         el('div',{class:'quota-top'},el('span',{text:w.label||'额度'}),
           el('span',{class:'quota-value'},expired?'上次已用 '+Number(w.used).toFixed(0)+'%':Number(w.remaining).toFixed(0)+'%',expired?null:el('small',{text:'剩余'}))),
         bar(expired?0:Number(w.remaining)),
-        el('div',{class:'quota-reset',text:w.resetsAt?resetText(w.resetsAt,now):'未提供重置时间'})));
+        el('div',{class:'quota-reset',text:w.resetsAt?resetText(w.resetsAt,now):Number(w.used)===0?'尚未开始计时，首次使用后开始':'未提供重置时间'})));
     }
     if(data?.credits && data.credits.amountMinor!==null && data.credits.amountMinor!==undefined)lines.append(el('div',{},'预付余额 ',el('b',{text:money(data.credits.amountMinor,data.credits.currency)})));
     if(lines.childElementCount)card.append(lines);
