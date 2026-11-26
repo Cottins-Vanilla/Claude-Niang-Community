@@ -59,7 +59,7 @@ export function describe(snapshot,now=Date.now()) {
     }
     const expired=w.resetsAt && w.resetsAt*1000<=now;
     lines.push('· '+(w.label??'额度')+'：'+(expired?'上次已用 '+w.used+'%，已到重置时间，等待刷新':'剩余 '+w.remaining+'%（已用 '+w.used+'%）')+
-      (w.resetsAt && !expired?'，'+localTime(w.resetsAt,now)+' 重置（'+until(w.resetsAt,now)+'）':w.resetsAt?'':'，未提供重置时间'));
+      (w.resetsAt && !expired?'，'+localTime(w.resetsAt,now)+' 重置（'+until(w.resetsAt,now)+'）':w.resetsAt?'':Number(w.used)===0?'，尚未开始计时（首次使用后才有重置时间）':'，未提供重置时间'));
   }
   const creditsAt=Number.isFinite(snapshot.credits?.observedAt)?snapshot.credits.observedAt:null;
   const creditsAgeMs=creditsAt===null?null:Math.max(0,now-creditsAt);

@@ -67,6 +67,15 @@ test('MCP distinguishes expired and restored values and rejects previous-day sta
   assert.equal(data.windows[0].remaining,null);assert.equal(data.windows[0].lastRemaining,90);assert.equal(data.todayWeeklyUsed,null);
   assert.doesNotMatch(text,/今日观测/);assert.equal(data.refreshMode,'manual');assert.equal('peakHours' in data,false);
 });
+test('MCP says an unused window has not started instead of calling its reset time missing',()=>{
+  const now=Date.now();
+  const snapshot={ok:true,queryOk:true,accountKey:'a',observedAt:now,
+    windows:[{kind:'session',label:'5 小时',used:0,remaining:100,resetsAt:null},{kind:'weekly',label:'每周',used:12,remaining:88,resetsAt:null}]};
+  const lines=describe(snapshot,now).text.split('\n');
+  assert.match(lines.find(line=>line.includes('5 小时')),/尚未开始计时/);
+  const weekly=lines.find(line=>line.includes('每周'));
+  assert.match(weekly,/未提供重置时间/);assert.doesNotMatch(weekly,/尚未开始计时/);
+});
 test('an unavailable explicit organization never silently returns another organization',async()=>{
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),'cn-missing-org-'));
   const spawnProcess=(_file,args)=>{
