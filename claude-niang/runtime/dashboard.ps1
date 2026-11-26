@@ -3,7 +3,8 @@
 function Open-WidgetDashboard {
   $hostScript=Join-Path $script:appDir 'runtime\dashboard-host.ps1'
   $powershell=Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
-  $arguments=@('-NoLogo','-NoProfile','-STA','-ExecutionPolicy','Bypass','-WindowStyle','Hidden','-File',('"'+$hostScript+'"'),'-ConfigPath',('"'+$script:configPath+'"'))
+  $arguments=@('-NoLogo','-NoProfile','-STA','-ExecutionPolicy','Bypass','-WindowStyle','Hidden','-File',('"'+$hostScript+'"'),'-ConfigPath',('"'+$script:configPath+'"'),
+    '-DataDir',('"'+$script:dataDir+'"'),'-NodePath',('"'+[string]$script:config.nodePath+'"'),'-Version',('"'+$script:appVersion+'"'))
   try{$null=Start-Process -FilePath $powershell -ArgumentList $arguments -WindowStyle Hidden -PassThru}
   catch{Write-WidgetLog $script:dataDir 'widget' ('用量管理窗口没能启动：'+$_.Exception.Message)}
 }

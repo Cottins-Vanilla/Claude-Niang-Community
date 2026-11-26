@@ -173,6 +173,11 @@ public sealed class ClaudeNiangDashboard : Form {
       core.Settings.AreDevToolsEnabled = debug;
       core.Settings.AreDefaultContextMenusEnabled = debug;
       core.Settings.IsStatusBarEnabled = false;
+      // The window shows only its own local page and opens every outside link in
+      // the default browser, so Edge's reputation check (SmartScreen) has nothing
+      // to protect here. Left on, it holds the first page back for about two
+      // seconds while it waits for Microsoft's servers.
+      try { core.Settings.IsReputationCheckingRequired = false; } catch (Exception) { }
       core.Settings.AreBrowserAcceleratorKeysEnabled = debug;
       // Lets the page mark its header as the window's title bar (app-region: drag).
       core.Settings.IsNonClientRegionSupportEnabled = true;

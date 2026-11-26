@@ -182,6 +182,10 @@ test('the window and page files are installed, released and wired to the menu',(
   for(const file of fs.readdirSync(path.join(appDir,'runtime','dashboard')))assert.ok(files.includes('runtime/dashboard/'+file),'not installed: '+file);
   assert.match(fs.readFileSync(path.join(appDir,'widget.ps1'),'utf8'),/runtime\\dashboard\.ps1/);
   assert.match(fs.readFileSync(path.join(appDir,'runtime','ui-settings.ps1'),'utf8'),/'账户总览' \{Open-WidgetDashboard\}/);
+  // Opening speed: the widget hands over what it knows instead of the host parsing
+  // JSON, and SmartScreen does not hold back the local page for about two seconds.
+  assert.match(fs.readFileSync(path.join(appDir,'runtime','dashboard.ps1'),'utf8'),/'-DataDir',.*'-NodePath',.*'-Version'/s);
+  assert.match(fs.readFileSync(path.join(appDir,'runtime','dashboard-host.cs'),'utf8'),/IsReputationCheckingRequired = false/);
   const page=fs.readFileSync(path.join(appDir,'runtime','dashboard','index.html'),'utf8');
   assert.match(page,/Content-Security-Policy/);assert.doesNotMatch(page,/https?:\/\/(?!www\.w3\.org)/,'the page loads nothing from the network');
   assert.doesNotMatch(fs.readFileSync(path.join(appDir,'runtime','dashboard','app.js'),'utf8'),/innerHTML\s*=\s*[^;]*\b(name|project|session)\b/,'names must not go through innerHTML');
