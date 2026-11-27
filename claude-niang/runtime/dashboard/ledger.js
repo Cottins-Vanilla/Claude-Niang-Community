@@ -130,9 +130,11 @@ export function series(rows,mode='day',{from=null,to=null,now=Date.now()}={}) {
   for(let t=first;t<=last && out.length<800;t=addDays(t,step))out.push({start:t,day:dayKey(t),...totals(map.get(t)||[])});
   return out;
 }
+// Every token of a total: input, output, cache write and cache read (合计).
+export const allTokens=t=>(t?.input||0)+(t?.output||0)+(t?.cacheWrite||0)+(t?.cacheRead||0);
 export function cumulative(points) {
-  let tokens=0,cost=0;
-  return points.map(p=>{tokens+=p.tokens;cost+=p.cost;return {...p,cumulativeTokens:tokens,cumulativeCost:cost};});
+  let tokens=0,all=0,cost=0;
+  return points.map(p=>{tokens+=p.tokens;all+=allTokens(p);cost+=p.cost;return {...p,cumulativeTokens:tokens,cumulativeAll:all,cumulativeCost:cost};});
 }
 
 // GitHub-style activity calendar: `weeks` columns ending with the current week.
@@ -143,7 +145,7 @@ export function heatmap(rows,now=Date.now(),weeks=53) {
   for(let w=0;w<weeks;w++)for(let d=0;d<7;d++){
     const t=addDays(start,w*7+d),key=dayKey(t),list=byDay.get(key)||[];
     const tokens=list.reduce((s,r)=>s+r.tokens,0);max=Math.max(max,tokens);
-    cells.push({week:w,weekday:d,day:key,tokens,replies:list.length,future:t>now});
+    cells.push({week:w,weekday:d,day:key,tokens,all:list.reduce((s,r)=>s+allTokens(r),0),replies:list.length,future:t>now});
   }
   for(const c of cells)c.level=c.tokens<=0?0:Math.min(4,1+Math.floor(4*c.tokens/(max+1)));
   return {cells,max,weeks,start};

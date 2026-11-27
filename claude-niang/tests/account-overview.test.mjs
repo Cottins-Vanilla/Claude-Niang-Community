@@ -212,6 +212,17 @@ test('distribution and sessions: subagents counted inside their session, search 
   assert.equal(json.totals.replies,6);assert.equal(json.sessions.length,4);
   assert.deepEqual(L.filterOptions(rows).entries.map(e=>e.label).sort(),['命令行','桌面端']);
 });
+test('合计 counts every token, also in the running sum and the heatmap',t=>{
+  const root=scratch(t);
+  write(root,'a/s.jsonl',[reply({id:'h1',daysAgo:1,input:10,output:100,cw5:5,cw1h:20,cr:1000}),reply({id:'h2',input:1,output:2,cw5:0,cw1h:3,cr:4})]);
+  const rows=rowsOf(root);
+  assert.equal(L.allTokens(L.totals(rows)),10+100+5+20+1000+1+2+3+4);
+  const points=L.cumulative(L.series(rows,'day',{now:NOW}));
+  assert.deepEqual(points.map(p=>p.cumulativeAll),[1135,1145]);
+  const cells=L.heatmap(rows,NOW).cells.filter(c=>c.all);
+  assert.deepEqual(cells.map(c=>[c.tokens,c.all]),[[110,1135],[3,10]]);
+});
+
 test('formatting',()=>{
   assert.deepEqual([L.formatTokens(668),L.formatTokens(12345),L.formatTokens(2953000),L.formatTokens(463000000)],['668','1.2 万','295 万','4.63 亿']);
   assert.deepEqual([L.formatCost(null),L.formatCost(0.004),L.formatCost(1234.5)],['未定价','<$0.01','$1,234.50']);
