@@ -217,7 +217,7 @@ Windows 10、ARM64、微软商店版 Claude、多屏和混合 DPI 仍需更多�
 - 诊断日志保存在 `%LOCALAPPDATA%\ClaudeNiang\state\logs\claude-niang.log`，用于记录运行状态和错误；反馈前请检查并去除个人信息。超过 1 MB 时会保留一份旧日志。
 - 挂件不读取常用浏览器或 Claude 桌面端里的登录，也不把 Cookie 交给 Node.js 部分或桌面扩展。
 - 读取额度时访问 claude.ai 的组织、用量、必要的套餐信息和余额接口；组织和余额会缓存，减少重复请求。
-- 用量管理窗口读取本机 Claude Code 会话记录里的 Tokens 数字（见上文），不读取对话内容，也不上传任何东西；页面不加载任何网络资源。
+- 用量管理窗口读取本机 Claude Code 会话记录里的 Tokens 数字和会话标题，以及 Claude 桌面端的对话列表（标题、是否归档），用来按对话统计（见上文）；不读取对话内容，也不上传任何东西；页面不加载任何网络资源。
 - 没有遥测或第三方上传，也不会自动下载或安装任何东西。开启「自动更新」（默认开启）时，每次启动挂件会向 GitHub 读取一次本仓库公开的版本列表，请求里不含账号、Cookie 或本机信息；可以在右键「关于 Claude娘」里关闭。音乐分析也只在本机进行。
 
 claude.ai 的网页接口不是公开 API，随时可能变化而失效。请遵守 Anthropic 的服务条款；遇到限流、验证或账号不可用时，挂件会提示原因，并等你下一次操作。
@@ -272,6 +272,8 @@ claude.ai 的网页接口不是公开 API，随时可能变化而失效。请遵
 | [release-version](.claude/skills/release-version/SKILL.md) | 版本号怎么定 |
 | [release-page](.claude/skills/release-page/SKILL.md) | 发布页（CHANGELOG 版本章节）的格式和发布步骤 |
 | [commit-hygiene](.claude/skills/commit-hygiene/SKILL.md) | 提交和推送不带临时文件和个人信息 |
+
+仓库根目录的 [CLAUDE.md](CLAUDE.md) 写给在本仓库工作的 AI 助手（Claude Code 等），会话开始时自动读取。维护者提出需求、设计或疑问时，先给 2–3 个方案再动手；意思明确的小改动直接做。界面类方案先给 HTML 效果图。改动只做本地提交，推送和发布要维护者确认。用 AI 助手参与贡献时，它也会按这份说明工作。
 
 ## 项目来源与 Claude 适配
 
