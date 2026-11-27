@@ -4,6 +4,24 @@
 
 2.0.0 起是社区维护版（[Cottins-Vanilla/Claude-Niang-Community](https://github.com/Cottins-Vanilla/Claude-Niang-Community)）。1.3.3 及更早的版本由原作者发布，下载链接指向原仓库 [Gryphus-Triune/Claude-Niang](https://github.com/Gryphus-Triune/Claude-Niang)。
 
+## 2.1.0-beta.5 — 2026-11-27
+
+测试版：修正一句内置语录的用词。
+
+**下载**：在 [v2.1.0-beta.5 发布页](https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/tag/v2.1.0-beta.5) 的 Assets 中选择 `claude-niang-v2.1.0-beta.5-windows.zip`（Windows 完整包，含挂件和可选的 Claude 桌面扩展）。`.sha256` 用于核对下载是否完整；`claude-niang-usage.mcpb` 只用于单独更新桌面扩展。
+
+### 改进
+- 内置语录「有用、诚实、无害。」改为「有益、诚实、无害。」，账户总览里点 logo 出现的同一句也一并修改。气泡排版不变。自己编辑过语录的，已保存的语录不会被覆盖。
+
+### 更新方法
+先运行旧目录的「停用Claude娘.cmd」，把新版本覆盖到同一个文件夹（保留 `claude-niang\installation.json`），再运行「安装Claude娘.cmd」。装过桌面扩展的，再双击一次新的 `.mcpb`。
+
+想继续收到测试版提醒，在右键「关于 Claude娘」里把更新范围设为「测试版」；默认只提醒正式版。
+
+### 已知问题
+- 2.1.0-beta.4 起额度窗口未开始计时的提示：账户总览里的显示还没有在实机上看过。
+- 检查更新结果卡片在多屏、混合 DPI 和 Windows 10 上的位置仍是适配目标，尚未实机验证。
+
 ## 2.1.0-beta.4 — 2026-11-26
 
 测试版：额度刚重置、还没开始使用时，不再显示「未提供重置时间」，改为「首次使用后开始计时」。

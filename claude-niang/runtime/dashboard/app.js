@@ -396,7 +396,7 @@ $('export-json').addEventListener('click',()=>exportData('json'));
 // Each poke squishes her and lets a few hearts float up with a line; five quick
 // pokes in a row make her spin. Nothing is saved or sent anywhere.
 const POKE_LINES=['别戳啦，会掉 token 的～','你说得完全正确！……诶，你刚才说了什么？','再戳就要收费了！按 token 计！',
-  '嘿嘿，被你发现了～','我在帮你盯着额度呢。','才、才不是在等你戳我……','今天也一起好好写代码吧！','有用、诚实、无害，还有可爱～'];
+  '嘿嘿，被你发现了～','我在帮你盯着额度呢。','才、才不是在等你戳我……','今天也一起好好写代码吧！','有益、诚实、无害，还有可爱～'];
 const brandLogo=$('brand-logo'),brandSay=$('brand-say');
 let pokes=[],lastLine=-1,sayTimer=0;
 function pokeBurst(count){
