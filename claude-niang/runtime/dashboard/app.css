@@ -278,10 +278,25 @@ html.maximized .window-controls .restore { display: block; }.page-header p { mar
 .share-row.other .bar > i { background: #d9cec5; }
 
 /* --- ledger ----------------------------------------------------------------------- */
+/* The filter panel expands (grid rows 0fr → 1fr) and slides in; while it moves
+   the content is clipped, once open it is not, so its shadow shows. */
+.filter-collapse { display: grid; grid-template-rows: 0fr; opacity: 0; transform: translateY(-8px);
+  transition: grid-template-rows .3s cubic-bezier(.2, .8, .2, 1), opacity .22s ease, transform .3s cubic-bezier(.2, .8, .2, 1); }
+.filter-collapse.open { grid-template-rows: 1fr; opacity: 1; transform: none; }
+.filter-collapse-inner { min-height: 0; overflow: hidden; }
+.filter-collapse.settled .filter-collapse-inner { overflow: visible; }
+#toggle-filter svg { transition: transform .3s cubic-bezier(.2, .8, .2, 1); }
+#toggle-filter[aria-expanded="true"] { background: var(--accent-soft); border-color: #efcdbd; color: var(--accent); }
+#toggle-filter[aria-expanded="true"] svg { transform: scale(1.08); }
+@keyframes field-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 .filter-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
 .filter-grid label { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: var(--text-2); }
 .filter-grid .custom-range { display: none; }
-.filter-panel.custom .filter-grid .custom-range { display: flex; }
+.filter-panel.custom .filter-grid .custom-range { display: flex; animation: field-in .22s ease both; }
+@media (prefers-reduced-motion: reduce) {
+  .filter-collapse, #toggle-filter svg { transition: none; }
+  .filter-panel.custom .filter-grid .custom-range { animation: none; }
+}
 .filter-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; padding-top: 16px; border-top: 1px solid #f1ebe5; }
 .active-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
 .active-filters:empty { display: none; }

@@ -81,7 +81,8 @@
     </section>
 
     <section id="ledger" class="view" hidden>
-      <div class="panel filter-panel" id="filter-panel" hidden>
+      <div class="filter-collapse" id="filter-collapse" inert><div class="filter-collapse-inner">
+      <div class="panel filter-panel" id="filter-panel">
         <div class="panel-heading"><h2>筛选记录</h2>
           <div class="segmented" id="range">
             <button data-range="today">今日</button><button data-range="7d">近七天</button><button data-range="30d">近三十天</button>
@@ -102,6 +103,7 @@
           <button class="primary" id="filter-apply">应用筛选</button>
         </div>
       </div>
+      </div></div>
       <div class="active-filters" id="active-filters"></div>
       <div class="metrics" id="ledger-metrics"></div>
       <article class="panel">
