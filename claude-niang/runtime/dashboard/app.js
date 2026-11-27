@@ -94,10 +94,14 @@ function metric(label,value,unit,note,tipHtml){
 function bar(percent){return el('div',{class:'bar'},el('i',{style:`width:${Math.max(0,Math.min(100,percent))}%`}));}
 function shareList(list,emptyText){
   if(!list.length)return el('div',{class:'empty',text:emptyText});
-  return el('div',{},list.map(item=>el('div',{class:'share-row'+(item.other?' other':''),dataset:{tip:usageTip(item.name,item)}},
-    el('div',{class:'share-top'},el('span',{class:'share-name',text:item.name}),
+  return el('div',{},list.map(item=>{
+    const state=item.state?L.CONVERSATION_STATES[item.state]:null;
+    const tip=usageTip(item.name,item)+(state?'<div class="tip-note">'+esc(state.note)+'</div>':'');
+    return el('div',{class:'share-row'+(item.other?' other':''),dataset:{tip}},
+    el('div',{class:'share-top'},el('span',{class:'share-label'},el('span',{class:'share-name',text:item.name}),state?el('span',{class:'tag state '+item.state,text:state.label}):null),
       el('span',{class:'share-value'},L.formatTokens(item.tokens)+' · '+(item.share*100).toFixed(1)+'%',el('b',{text:item.coverage?L.formatCost(item.cost):'未定价'}))),
-    bar(item.share*100))));
+    bar(item.share*100));
+  }));
 }
 
 // Bars of input + output per point; the last one highlighted.
@@ -336,8 +340,8 @@ function renderLedger(){
   }
   $('activity-note').textContent=note;
   $('models').replaceChildren(shareList(L.distribution(rows,'modelName',6),'没有符合条件的记录。'));
-  $('projects').replaceChildren(shareList(L.distribution(rows,'project',8),'没有符合条件的记录。'));
-  $('model-note').textContent=$('project-note').textContent='按 Tokens 占比';
+  $('conversations').replaceChildren(shareList(L.conversationDistribution(rows,state.index,8),'没有符合条件的记录。'));
+  $('model-note').textContent=$('conversation-note').textContent='按 Tokens 占比';
   // Sessions.
   const all=L.searchSessions(L.sessionTable(rows),state.search);
   const pages=Math.max(1,Math.ceil(all.length/PAGE_SIZE));state.page=Math.min(state.page,pages-1);
@@ -345,9 +349,11 @@ function renderLedger(){
   $('session-note').textContent=all.length+' 个会话'+(state.search?'（已搜索）':'')+' · 自身用量不含子代理';
   const body=$('session-rows');body.replaceChildren();
   if(!shown.length)body.append(el('tr',{},el('td',{colspan:'7',class:'empty',text:state.rows.length?'没有符合条件的会话。':'还没有本机 Claude Code 记录。'})));
+  const conversations=L.conversationIndex(state.index);
   for(const s of shown){
-    body.append(el('tr',{dataset:{tip:usageTip(s.projects.join(' / '),s.all)}},
-      el('td',{},el('div',{class:'session-project',text:s.projects.join(' / ')}),el('div',{class:'session-id'},s.session.slice(0,8),el('span',{class:'session-models',text:s.models.join(' · ')}))),
+    const info=conversations.of({session:s.session==='(无会话编号)'?'':s.session,entry:s.entry,project:s.project}),mark=info.state?L.CONVERSATION_STATES[info.state]:null;
+    body.append(el('tr',{dataset:{tip:usageTip(info.title,s.all)+(mark?'<div class="tip-note">'+esc(mark.note)+'</div>':'')}},
+      el('td',{},el('div',{class:'session-project'},s.projects.join(' / '),mark?el('span',{class:'tag state '+info.state,text:mark.label}):null),el('div',{class:'session-id'},s.session.slice(0,8),el('span',{class:'session-models',text:s.models.join(' · ')}))),
       el('td',{},el('span',{class:'tag',text:L.ENTRY_LABELS[s.entry]||'混合'})),
       el('td',{},s.subagentReplies?el('span',{class:'tag sub',text:'含子代理 '+s.subagentReplies}):el('span',{class:'tag',text:'主会话'})),
       el('td',{class:'num',text:L.formatTokens(s.self.tokens)}),

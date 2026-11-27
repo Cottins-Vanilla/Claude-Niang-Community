@@ -65,13 +65,76 @@ test('old rows age out; an index of another folder or version is rebuilt',t=>{
   assert.ok(scanLocalUsage({root,index:{...index,version:1,records:{old:[1]}},now:NOW}).index.records.c2);
 });
 
+// A desktop app conversation file (claude-code-sessions/<account>/<org>/local_*.json).
+function desktop(dir,id,{title='',archived=false,cli,prior=[]}){
+  return write(dir,'acct/org/'+id+'.json',[JSON.stringify({sessionId:id,cliSessionId:cli,priorCliSessionIds:prior,title,isArchived:archived,initialMessage:'SECRET PROMPT'})]);
+}
+const titleLine=(session,title)=>JSON.stringify({type:'custom-title',customTitle:title,sessionId:session});
+
+test('conversations: titles, desktop conversations spanning sessions, archived and deleted ones',t=>{
+  const dir=scratch(t),root=path.join(dir,'projects'),apps=path.join(dir,'sessions');
+  write(root,'a/d1.jsonl',[reply({id:'e1',session:'d1'})]);
+  write(root,'a/d2.jsonl',[reply({id:'e2',session:'d2'})]);
+  write(root,'a/d3.jsonl',[reply({id:'e3',session:'d3'})]);
+  write(root,'a/c1.jsonl',[titleLine('c1','old name'),reply({id:'e4',session:'c1',entry:'cli'}),titleLine('c1','命令行对话')]);
+  desktop(apps,'local_A',{title:'桌面对话',cli:'d2',prior:['d1']});
+  const gone=desktop(apps,'local_B',{title:'要删的对话',cli:'d3'});
+  let {index}=scanLocalUsage({root,now:NOW,desktopDirs:[apps]});
+  assert.equal(index.titles.c1,'命令行对话','latest title wins');
+  assert.deepEqual(index.conversations.local_A,{title:'桌面对话',archived:false,gone:false,cli:['d2','d1']});
+  assert.doesNotMatch(JSON.stringify(index),/SECRET/);
+  desktop(apps,'local_A',{title:'桌面对话',archived:true,cli:'d2',prior:['d1']});
+  fs.rmSync(gone);
+  ({index}=scanLocalUsage({root,index,now:NOW,desktopDirs:[apps]}));
+  assert.equal(index.conversations.local_A.archived,true);
+  assert.deepEqual(index.conversations.local_B,{title:'要删的对话',archived:false,gone:true,cli:['d3']},'deleted conversation kept with its title');
+  ({index}=scanLocalUsage({root,index,now:NOW,desktopDirs:[path.join(dir,'missing')]}));
+  assert.equal(index.conversations.local_A.gone,false,'an unreadable app folder marks nothing deleted');
+});
+
+test('the conversation share groups sessions and marks archived, deleted and vanished conversations',t=>{
+  const dir=scratch(t),root=path.join(dir,'projects'),apps=path.join(dir,'sessions');
+  write(root,'E--Work-alpha/d1.jsonl',[reply({id:'f1',session:'d1',output:300})]);
+  write(root,'E--Work-alpha/d2.jsonl',[reply({id:'f2',session:'d2',output:300})]);
+  write(root,'E--Work-alpha/d3.jsonl',[reply({id:'f3',session:'d3',output:200})]);
+  write(root,'E--Work-alpha/d4.jsonl',[reply({id:'f4',session:'d4',output:150})]);
+  write(root,'E--Work-alpha/c1.jsonl',[titleLine('c1','命令行对话'),reply({id:'f5',session:'c1',entry:'cli',output:100})]);
+  write(root,'E--Work-alpha/c2.jsonl',[reply({id:'f6',session:'c2abcdef99',entry:'cli',output:50})]);
+  desktop(apps,'local_A',{title:'桌面对话',cli:'d2',prior:['d1']});
+  desktop(apps,'local_B',{title:'归档的对话',archived:true,cli:'d3'});
+  const deleted=desktop(apps,'local_C',{title:'删掉的对话',cli:'d4'});
+  let {index}=scanLocalUsage({root,now:NOW,desktopDirs:[apps]});
+  fs.rmSync(deleted);fs.rmSync(path.join(root,'E--Work-alpha','c2.jsonl'));
+  ({index}=scanLocalUsage({root,index,now:NOW,desktopDirs:[apps]}));
+  const list=L.conversationDistribution(L.rowsFromRecords(index.records),index,8);
+  const by=Object.fromEntries(list.map(x=>[x.name,x]));
+  assert.equal(list[0].name,'桌面对话');assert.equal(by['桌面对话'].output,600,'sessions of one desktop conversation are added up');
+  assert.equal(by['桌面对话'].state,null);
+  assert.equal(by['归档的对话'].state,'archived');
+  assert.equal(by['删掉的对话'].state,'deleted');
+  assert.equal(by['命令行对话'].state,null);
+  assert.equal(by['alpha · c2abcdef'].state,'missing','a session whose transcript is gone is marked');
+  // A desktop session the app never listed (deleted before the scan saw it).
+  const unseen=L.conversationIndex(index).of({session:'zz9',entry:'desktop',project:'alpha'});
+  assert.equal(unseen.state,'deleted');
+  assert.equal(L.conversationIndex({files:{}}).of({session:'zz9',entry:'desktop',project:'alpha'}).state,'missing','without the app nothing is called deleted');
+});
+
+test('an index from the previous version keeps rows whose transcripts are gone',t=>{
+  const root=scratch(t);write(root,'a/s.jsonl',[titleLine('s1','留下的对话'),reply({id:'g1'})]);
+  const old={version:2,root,files:{},records:{gone:[NOW-1000,'claude-opus-5-5','alpha','s0',1,2,0,0,0,0,'standard','claude-desktop']}};
+  const {index}=scanLocalUsage({root,index:old,now:NOW});
+  assert.equal(index.version,INDEX_VERSION);assert.ok(index.records.gone,'old row lost in the upgrade');assert.ok(index.records.g1);
+  assert.equal(index.titles.s1,'留下的对话','existing transcripts are read again for titles');
+});
+
 test('the command writes the index only when something changed',t=>{
   const dir=scratch(t),root=path.join(dir,'projects'),data=path.join(dir,'state');
   write(root,'a/s.jsonl',[reply({id:'d1'})]);
-  const first=refreshLocalUsage(data,{root,now:NOW});
+  const first=refreshLocalUsage(data,{root,now:NOW,desktopDirs:[]});
   assert.equal(first.changed,true);assert.equal(first.replies,1);
   const file=path.join(data,'usage-index.json'),mtime=fs.statSync(file).mtimeMs;
-  const second=refreshLocalUsage(data,{root,now:NOW+1000});
+  const second=refreshLocalUsage(data,{root,now:NOW+1000,desktopDirs:[]});
   assert.equal(second.changed,false);assert.equal(fs.statSync(file).mtimeMs,mtime,'unchanged index rewritten');
   assert.doesNotMatch(fs.readFileSync(file,'utf8'),/SECRET/);
   assert.equal(claudeProjectsDir({USERPROFILE:'C:\\Users\\example'}),path.join('C:\\Users\\example','.claude','projects'));

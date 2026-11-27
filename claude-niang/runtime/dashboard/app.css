@@ -266,7 +266,12 @@ html.maximized .window-controls .restore { display: block; }.page-header p { mar
 .share-row { padding: 9px 0; }
 .share-row + .share-row { border-top: 1px solid #f4efea; }
 .share-top { display: flex; justify-content: space-between; gap: 12px; font-size: 13.5px; }
+.share-label { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .share-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tag.state { flex: none; height: 18px; padding: 0 6px; font-size: 11px; font-weight: 600; }
+.tag.state.archived { background: #f1efed; border-color: #e0dbd6; color: #7a716a; }
+.tag.state.deleted { background: #fbecec; border-color: #efcfcf; color: #b04a4a; }
+.tag.state.missing { background: #fdf4e3; border-color: #f0dfb8; color: #9a6b12; }
 .share-value { color: var(--text-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
 .share-value b { color: var(--text); font-weight: 650; margin-left: 8px; }
 .share-row .bar { height: 6px; margin: 7px 0 0; }
@@ -291,6 +296,7 @@ table.sessions { width: 100%; border-collapse: collapse; font-size: 13px; }
 .sessions td { padding: 12px 14px; border-bottom: 1px solid #f3eee9; vertical-align: middle; white-space: nowrap; }
 .sessions tbody tr:hover td { background: #fcf8f5; }
 .session-project { font-weight: 650; max-width: 280px; overflow: hidden; text-overflow: ellipsis; }
+.session-project .tag.state { margin-left: 6px; vertical-align: 1px; }
 .session-id { margin-top: 2px; font: 11.5px/1.4 Consolas, "Cascadia Mono", monospace; color: var(--muted); }
 .session-models { color: var(--text-2); font-size: 11.5px; margin-left: 6px; font-family: inherit; }
 .tag { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; background: var(--sunken); border: 1px solid var(--border); font-size: 12px; color: var(--text-2); }
@@ -304,6 +310,7 @@ table.sessions { width: 100%; border-collapse: collapse; font-size: 13px; }
 .tooltip b { color: #fff; font-size: 12.5px; }
 .tooltip .row { display: flex; justify-content: space-between; gap: 18px; }
 .tooltip .row span:last-child { font-variant-numeric: tabular-nums; }
+.tooltip .tip-note { margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,.15); color: #e9dcd3; }
 .toast { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); padding: 10px 18px; border-radius: 22px; background: #2f2723; color: #fff; font-size: 13px; box-shadow: 0 8px 24px rgba(30, 18, 12, .25); z-index: 11; }
 
 /* Snapshot mode (preview images): no inner scrolling, the whole page in view. */
