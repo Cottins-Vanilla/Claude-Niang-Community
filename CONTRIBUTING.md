@@ -51,7 +51,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\build-release.ps1
 
 一个程序版本只对应一个 `vX.Y.Z` 标签和一个 Release，不再使用 `repack` 或同版本的第二个发布记录。测试版用 `vX.Y.Z-beta.N`，同一个工作流发布为预发布，不成为 Latest，也不检查 README。已经公开的标签和附件不能覆盖；后续修复应增加程序版本。版本号怎么定见 [版本号规范](.claude/skills/release-version/SKILL.md)，CHANGELOG 版本章节（即发布页正文）的格式见 [发布页规范](.claude/skills/release-page/SKILL.md)。
 
-1. 同步更新 `claude-niang/package.json`、`claude-niang/extension/manifest.json`、README 的 `**当前程序版本：X.Y.Z**`、版本徽章、版本说明与附件下载链接，以及 CHANGELOG 中唯一的 `## X.Y.Z` 章节，提交并合并到 `main`。下载链接须写明相同的 `vX.Y.Z` 标签和 ZIP 文件名，不使用 `latest/download` 搭配固定版本文件名。
+1. 同步更新 `claude-niang/package.json`、`claude-niang/extension/manifest.json`、README 的 `**当前程序版本：X.Y.Z**`、版本徽章、版本说明与附件下载链接，以及 CHANGELOG 中唯一的 `## X.Y.Z` 章节，提交并合并到 `main`。测试版只改前两个文件和 CHANGELOG 的 `## X.Y.Z-beta.N` 章节，README 不改；测试版之后的正式版，CHANGELOG 要汇总上一个正式版以来的全部改动，见 [版本号规范](.claude/skills/release-version/SKILL.md) 的「从测试版到正式版」。下载链接须写明相同的 `vX.Y.Z` 标签和 ZIP 文件名，不使用 `latest/download` 搭配固定版本文件名。
 2. 在 [Release 工作流](https://github.com/Cottins-Vanilla/Claude-Niang-Community/actions/workflows/release.yml)选择 **Run workflow**，分支选 `main`，输入精确标签，例如 `v2.0.1`。也可以用 GitHub CLI：`gh workflow run release.yml --ref main -f release_tag=v2.0.1`。不需要提前创建标签，也不需要另行上传附件；推送标签不会自动发布。
 3. 工作流先校验上述版本与发布说明，再完成 Node 测试、Windows 集成检查和干净打包，随后才创建标签和草稿 Release。最终附件严格为 Windows ZIP、该 ZIP 的 `.sha256` 和从同一 ZIP 提取的 `.mcpb`；本地校验和远端附件的名称、数量、大小及 SHA256 全部通过后才公开。
 
