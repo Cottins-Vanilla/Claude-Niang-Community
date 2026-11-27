@@ -451,7 +451,7 @@ $('filter-apply').addEventListener('click',()=>{
   state.filter={range:state.draftRange??state.filter.range,from:$('f-from').value,to:$('f-to').value,model:$('f-model').value,conversation:$('f-conversation').value};
   state.draftRange=null;state.page=0;render();syncFilterControls();
 });
-$('filter-reset').addEventListener('click',()=>{state.filter={...L.EMPTY_FILTER,range:'all'};state.draftRange=null;state.page=0;render();syncFilterControls();});
+$('filter-reset').addEventListener('click',()=>{state.filter={...L.EMPTY_FILTER};state.draftRange=null;state.page=0;render();syncFilterControls();});
 document.querySelectorAll('#conversation-mode button').forEach(b=>b.addEventListener('click',()=>{state.conversationMode=b.dataset.mode;writePref('conversationMode',b.dataset.mode);render();}));
 document.querySelectorAll('#chart-mode button').forEach(b=>b.addEventListener('click',()=>{state.chartMode=b.dataset.mode;render();}));
 $('session-search').addEventListener('input',event=>{state.search=event.target.value;state.page=0;render();});
