@@ -293,11 +293,13 @@ function fillSelect(select,options,allLabel){
   select.replaceChildren(el('option',{value:'',text:allLabel}),...options.map(o=>el('option',{value:o.value,text:(o.label??o.value)+'（'+o.count+'）'})));
   select.value=options.some(o=>o.value===value)?value:'';
 }
-function syncFilterControls(){
+// values=false keeps what is typed or picked in the open panel but not applied
+// yet: the page redraws whenever new usage arrives, which must not undo it.
+function syncFilterControls({values=true}={}){
   const f=state.filter;
   document.querySelectorAll('#range button').forEach(b=>b.classList.toggle('selected',b.dataset.range===(state.draftRange??f.range)));
   $('filter-panel').classList.toggle('custom',(state.draftRange??f.range)==='custom');
-  for(const [id,key] of [['f-from','from'],['f-to','to'],['f-model','model'],['f-project','project'],['f-source','source'],['f-speed','speed'],['f-entry','entry']])$(id).value=f[key]||'';
+  if(values)for(const [id,key] of [['f-from','from'],['f-to','to'],['f-model','model'],['f-project','project'],['f-source','source'],['f-speed','speed'],['f-entry','entry']])$(id).value=f[key]||'';
 }
 // Opens or closes the filter panel to match state.filterOpen. Safe to call on
 // every render: nothing moves unless the state changed.
@@ -326,7 +328,7 @@ function activeFilters(){
 function renderLedger(){
   const options=L.filterOptions(state.rows);
   fillSelect($('f-model'),options.models,'全部模型');fillSelect($('f-project'),options.projects,'全部项目');fillSelect($('f-entry'),options.entries,'全部入口');
-  syncFilterControls();
+  syncFilterControls({values:!state.filterOpen});
   const chips=activeFilters(),extra=chips.length-1;
   $('filter-label').textContent=extra?'筛选 · '+extra:'筛选';
   showFilterPanel();
@@ -406,9 +408,9 @@ $('toggle-filter').addEventListener('click',()=>{state.filterOpen=!state.filterO
 document.querySelectorAll('#range button').forEach(b=>b.addEventListener('click',()=>{state.draftRange=b.dataset.range;syncFilterControls();}));
 $('filter-apply').addEventListener('click',()=>{
   state.filter={range:state.draftRange??state.filter.range,from:$('f-from').value,to:$('f-to').value,model:$('f-model').value,project:$('f-project').value,source:$('f-source').value,speed:$('f-speed').value,entry:$('f-entry').value};
-  state.draftRange=null;state.page=0;render();
+  state.draftRange=null;state.page=0;render();syncFilterControls();
 });
-$('filter-reset').addEventListener('click',()=>{state.filter={...L.EMPTY_FILTER,range:'all'};state.draftRange=null;state.page=0;render();});
+$('filter-reset').addEventListener('click',()=>{state.filter={...L.EMPTY_FILTER,range:'all'};state.draftRange=null;state.page=0;render();syncFilterControls();});
 document.querySelectorAll('#chart-mode button').forEach(b=>b.addEventListener('click',()=>{state.chartMode=b.dataset.mode;render();}));
 $('session-search').addEventListener('input',event=>{state.search=event.target.value;state.page=0;render();});
 $('export-csv').addEventListener('click',()=>exportData('csv'));
