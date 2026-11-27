@@ -67,6 +67,32 @@ button:disabled { opacity: .45; cursor: default; }
 input[type=search], input[type=date], select {
   height: 36px; padding: 0 11px; border: 1px solid var(--border-strong); border-radius: 8px; background: var(--surface); min-width: 0;
 }
+/* Dropdown lists in the window's colours where WebView2 can style them
+   (customizable select, WebView2 135+); older runtimes keep the system list. */
+@supports (appearance: base-select) {
+  select, select::picker(select) { appearance: base-select; }
+  select { display: flex; align-items: center; gap: 8px; cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+  select:hover { border-color: #cfc3b8; }
+  select:open { border-color: var(--accent-tint); box-shadow: 0 0 0 3px var(--accent-soft); }
+  select::picker-icon { color: var(--muted); transition: rotate .2s ease; }
+  select:open::picker-icon { rotate: 180deg; }
+  select::picker(select) {
+    margin-top: 6px; padding: 5px; max-height: min(340px, 60vh); overflow-y: auto;
+    border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text);
+    box-shadow: 0 12px 32px rgba(74, 46, 30, .16), 0 2px 6px rgba(74, 46, 30, .06);
+    opacity: 0; translate: 0 -4px;
+    transition: opacity .16s ease, translate .16s ease, overlay .16s allow-discrete, display .16s allow-discrete;
+  }
+  select:open::picker(select) { opacity: 1; translate: 0 0; }
+  @starting-style { select:open::picker(select) { opacity: 0; translate: 0 -4px; } }
+  select::picker(select)::-webkit-scrollbar { width: 8px; }
+  select::picker(select)::-webkit-scrollbar-thumb { background: #ddd4cc; border-radius: 8px; border: 2px solid var(--surface); }
+  select option { display: flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 10px; border-radius: 7px; font-size: 13px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+  select option:hover, select option:focus-visible { background: var(--accent-soft); color: var(--accent); outline: none; }
+  select option:checked { color: var(--accent); font-weight: 600; }
+  select option::checkmark { color: var(--accent); }
+  @media (prefers-reduced-motion: reduce) { select::picker(select), select::picker-icon { transition: none; } }
+}
 @keyframes spin { to { transform: rotate(360deg); } }
 .segmented { display: inline-flex; padding: 3px; gap: 2px; background: var(--sunken); border: 1px solid var(--border); border-radius: 10px; }
 .segmented button { min-height: 30px; padding: 0 12px; border: 0; background: none; border-radius: 7px; color: var(--text-2); font-size: 13px; }
@@ -310,9 +336,9 @@ html.maximized .window-controls .restore { display: block; }.page-header p { mar
 #toggle-filter[aria-expanded="true"] { background: var(--accent-soft); border-color: #efcdbd; color: var(--accent); }
 #toggle-filter[aria-expanded="true"] svg { transform: scale(1.08); }
 @keyframes field-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
-/* 模型, 对话 (titles are long, so it gets twice the room), and the two dates of 自定义 in front. */
-.filter-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 14px; }
-.filter-panel.custom .filter-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 2fr); }
+/* Every field the same width in four columns (the two dates of 自定义 come first);
+   with only 模型 and 对话 the rest of the row stays empty. */
+.filter-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
 .filter-grid label { display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: var(--text-2); }
 .filter-grid .custom-range { display: none; }
 .filter-panel.custom .filter-grid .custom-range { display: flex; animation: field-in .22s ease both; }
@@ -359,7 +385,7 @@ html.snapshot .sidebar { height: auto; min-height: 100vh; }
 
 @media (max-width: 1100px) {
   .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .filter-panel.custom .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 980px) {
   .accounts, .overview-bottom, .two-col { grid-template-columns: minmax(0, 1fr); }

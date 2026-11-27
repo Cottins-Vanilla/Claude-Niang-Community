@@ -331,7 +331,8 @@ function renderOverview(){
 // --- ledger ----------------------------------------------------------------------
 function fillSelect(select,options,allLabel){
   const value=select.value;
-  select.replaceChildren(el('option',{value:'',text:allLabel}),...options.map(o=>el('option',{value:o.value,text:(o.label??o.value)+'（'+o.count+'）'})));
+  // title: the whole name, for the long ones the list cuts short.
+  select.replaceChildren(el('option',{value:'',text:allLabel}),...options.map(o=>{const text=(o.label??o.value)+'（'+o.count+'）';return el('option',{value:o.value,text,title:text});}));
   select.value=options.some(o=>o.value===value)?value:'';
 }
 // values=false keeps what is typed or picked in the open panel but not applied
