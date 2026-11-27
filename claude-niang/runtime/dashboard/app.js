@@ -449,7 +449,8 @@ $('toggle-filter').addEventListener('click',()=>{state.filterOpen=!state.filterO
 document.querySelectorAll('#range button').forEach(b=>b.addEventListener('click',()=>{state.draftRange=b.dataset.range;syncFilterControls();}));
 $('filter-apply').addEventListener('click',()=>{
   state.filter={range:state.draftRange??state.filter.range,from:$('f-from').value,to:$('f-to').value,model:$('f-model').value,conversation:$('f-conversation').value};
-  state.draftRange=null;state.page=0;render();syncFilterControls();
+  state.draftRange=null;state.page=0;state.filterOpen=false;render();syncFilterControls();showFilterPanel();
+  $('toggle-filter').focus({preventScroll:true});
 });
 $('filter-reset').addEventListener('click',()=>{state.filter={...L.EMPTY_FILTER};state.draftRange=null;state.page=0;render();syncFilterControls();});
 document.querySelectorAll('#conversation-mode button').forEach(b=>b.addEventListener('click',()=>{state.conversationMode=b.dataset.mode;writePref('conversationMode',b.dataset.mode);render();}));
