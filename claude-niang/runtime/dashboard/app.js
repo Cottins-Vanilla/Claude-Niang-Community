@@ -78,9 +78,10 @@ document.addEventListener('mousemove',event=>{
 document.addEventListener('mouseleave',()=>{tip.hidden=true;});
 let toastTimer=0;
 function toast(text){const t=$('toast');t.textContent=text;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.hidden=true;},2600);}
-function usageTip(title,t){
+// withTotal: also show 合计, every token counted (input, output, cache write, cache read).
+function usageTip(title,t,{withTotal=false}={}){
   const row=(a,b)=>`<div class="row"><span>${a}</span><span>${b}</span></div>`;
-  return `<b>${esc(title)}</b>`+row('Tokens（输入+输出）',L.formatTokens(t.tokens))+row('输入',L.formatTokens(t.input))+row('输出',L.formatTokens(t.output))+
+  return `<b>${esc(title)}</b>`+(withTotal?row('合计',L.formatTokens((t.input||0)+(t.output||0)+(t.cacheWrite||0)+(t.cacheRead||0))):'')+row('Tokens（输入+输出）',L.formatTokens(t.tokens))+row('输入',L.formatTokens(t.input))+row('输出',L.formatTokens(t.output))+
     row('缓存写入',L.formatTokens(t.cacheWrite))+row('缓存读取',L.formatTokens(t.cacheRead))+row('回复',t.replies+' 次')+row('参考费用',t.coverage===null?'—':L.formatCost(t.cost));
 }
 
@@ -274,7 +275,7 @@ function renderOverview(){
   const m=$('overview-metrics');m.replaceChildren();
   const noUsage=!state.haveUsage?'正在统计…':'本机还没有 Claude Code 记录';
   m.append(
-    metric('今日本机用量',state.rows.length?L.formatTokens(today.tokens):'—','Tokens',state.rows.length?'输入 '+L.formatTokens(today.input)+' · 输出 '+L.formatTokens(today.output):noUsage,state.rows.length?usageTip('今日',today):null),
+    metric('今日本机用量',state.rows.length?L.formatTokens(today.tokens):'—','Tokens',state.rows.length?'输入 '+L.formatTokens(today.input)+' · 输出 '+L.formatTokens(today.output):noUsage,state.rows.length?usageTip('今日',today,{withTotal:true}):null),
     metric('今日会话',String(today.sessions),'个',today.replies+' 次回复'+(state.rows.length?'':' · '+noUsage)),
     metric('缓存命中',L.formatPercent(today.cacheHit),'',today.cacheHit===null?'今天还没有缓存记录':'缓存读取 / 全部输入'),
     metric('今日参考费用',today.replies?L.formatCost(today.cost):'—','',today.replies?'定价覆盖 '+L.formatPercent(today.coverage)+' · 不是账单':'按 Claude API 公开价格估算',`<b>参考费用</b><div>${esc(PRICE_SOURCE)}；订阅不按 Token 计费，仅供参考。</div>`));
@@ -319,7 +320,7 @@ function renderLedger(){
   const now=Date.now(),rows=L.filterRows(state.rows,state.filter,now),t=L.totals(rows);
   const subReplies=rows.filter(r=>r.source==='subagent').length;
   const m=$('ledger-metrics');m.replaceChildren(
-    metric('Tokens',rows.length?L.formatTokens(t.tokens):'—','','输入 '+L.formatTokens(t.input)+' · 输出 '+L.formatTokens(t.output),rows.length?usageTip('筛选范围',t):null),
+    metric('Tokens',rows.length?L.formatTokens(t.tokens):'—','','输入 '+L.formatTokens(t.input)+' · 输出 '+L.formatTokens(t.output),rows.length?usageTip('筛选范围',t,{withTotal:true}):null),
     metric('会话',String(t.sessions),'个',t.replies+' 次回复'+(subReplies?' · 子代理 '+subReplies:'')),
     metric('缓存命中',L.formatPercent(t.cacheHit,1),'','读取 '+L.formatTokens(t.cacheRead)+' · 写入 '+L.formatTokens(t.cacheWrite)),
     metric('参考费用',rows.length?L.formatCost(t.cost):'—','',rows.length?'定价覆盖 '+L.formatPercent(t.coverage)+' · 不是账单':'按 Claude API 公开价格估算',`<b>参考费用</b><div>${esc(PRICE_SOURCE)}；订阅不按 Token 计费，仅供参考。</div>`));
