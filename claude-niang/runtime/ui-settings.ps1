@@ -142,9 +142,9 @@ function Initialize-WidgetSettingsMenu {
  </Style>
  <Style x:Key="SettingsPreset" TargetType="Button">
   <Setter Property="FontSize" Value="13"/><Setter Property="Foreground" Value="#9E5A3F"/><Setter Property="Background" Value="#F6ECE5"/>
-  <Setter Property="Padding" Value="8,6"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Cursor" Value="Hand"/>
+  <Setter Property="Padding" Value="4,6"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Cursor" Value="Hand"/>
   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
-   <Border x:Name="PresetBody" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+   <Border x:Name="PresetBody" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}"><Viewbox StretchDirection="DownOnly" HorizontalAlignment="Center" VerticalAlignment="Center"><ContentPresenter/></Viewbox></Border>
    <ControlTemplate.Triggers>
     <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="PresetBody" Property="Background" Value="#F0DED3"/></Trigger>
     <Trigger Property="IsPressed" Value="True"><Setter TargetName="PresetBody" Property="Background" Value="#E9CDBD"/></Trigger>
@@ -178,6 +178,11 @@ function Initialize-WidgetSettingsMenu {
 '@)
   $script:settingsMenuUi.Bubble=Add-SettingsAction '查看额度' {if(!$script:collapsed -and $script:bubbleMode-eq 'quota'){Hide-Quota}else{Show-Quota}} -ReturnItem
   Add-SettingsAction '刷新额度' {Request-Refresh}
+  $script:settingsMenuUi.Alerts=Add-SettingsSubmenu '额度提醒' {
+    $script:settingsMenuUi.LowQuota=Add-SettingsAction '低额度提醒' {param($sender,$event)$script:lowQuotaAlert=[bool]$sender.IsChecked;Save-Settings} -Description '读取到新额度后，5 小时剩 20%、每周剩 15% 时提醒' -Checkable -ReturnItem
+    $script:settingsMenuUi.ResetAlert=Add-SettingsAction '额度重置提醒' {param($sender,$event)$script:resetAlert=[bool]$sender.IsChecked;Save-Settings} -Description '读取后发现额度重置时提醒' -Checkable -ReturnItem
+    $script:settingsMenuUi.ResetAutoRead=Add-SettingsAction '重置后自动读取' {param($sender,$event)$script:resetAutoRead=[bool]$sender.IsChecked;Save-Settings} -Description '到重置时间后自动读一次，平时仍手动刷新' -Checkable -ReturnItem
+  } -ReturnItem
   Add-SettingsAction '账户总览' {Open-WidgetDashboard}
   Add-SettingsDivider
   $script:settingsMenuUi.Account=Add-SettingsSubmenu 'Claude 账号' {
@@ -193,18 +198,15 @@ function Initialize-WidgetSettingsMenu {
     Add-SettingsDivider
     Add-SettingsAction '退出登录' {Start-WidgetLogout} -Description '只清除 Claude 娘里的登录，不影响桌面端'
   } -ReturnItem
-  $script:settingsMenuUi.Alerts=Add-SettingsSubmenu '额度提醒' {
-    $script:settingsMenuUi.LowQuota=Add-SettingsAction '低额度提醒' {param($sender,$event)$script:lowQuotaAlert=[bool]$sender.IsChecked;Save-Settings} -Description '读取到新额度后，5 小时剩 20%、每周剩 15% 时提醒' -Checkable -ReturnItem
-    $script:settingsMenuUi.ResetAlert=Add-SettingsAction '额度重置提醒' {param($sender,$event)$script:resetAlert=[bool]$sender.IsChecked;Save-Settings} -Description '读取后发现额度重置时提醒' -Checkable -ReturnItem
-    $script:settingsMenuUi.ResetAutoRead=Add-SettingsAction '重置后自动读取' {param($sender,$event)$script:resetAutoRead=[bool]$sender.IsChecked;Save-Settings} -Description '到重置时间后自动读一次，平时仍手动刷新' -Checkable -ReturnItem
-  } -ReturnItem
   Add-SettingsDivider
   $script:settingsMenuUi.Character=Add-SettingsAction '更换形象' {Open-WidgetCharacterGallery} -ReturnItem
   $script:settingsMenuUi.Character.ToolTip='选择形象或添加电脑上的图片'
   $script:settingsMenuUi.Appearance=Add-SettingsSubmenu '外观设置' {
-  $presets=New-Object Windows.Controls.Primitives.UniformGrid;$presets.Columns=3;$presets.Margin=[Windows.Thickness]::new(0,1,0,2);$script:settingsMenuUi.SizeButtons=@()
+  # The row also uses the 22px check-mark column (it never shows a check), so
+  # 「标准 · 100%」 fits; on narrow screens the labels shrink instead of clipping.
+  $presets=New-Object Windows.Controls.Primitives.UniformGrid;$presets.Columns=3;$presets.Margin=[Windows.Thickness]::new(-2,1,-24,2);$script:settingsMenuUi.SizeButtons=@()
   foreach($choice in @(@{label='小 · 80%';scale=0.8},@{label='标准 · 100%';scale=1.0},@{label='大 · 140%';scale=1.4})){
-    $button=New-Object Windows.Controls.Button;$button.Content=$choice.label;$button.Tag=$choice.scale;$button.Margin=[Windows.Thickness]::new(0,0,5,0);$button.Style=$script:settingsMenuResources['SettingsPreset']
+    $button=New-Object Windows.Controls.Button;$button.Content=$choice.label;$button.Tag=$choice.scale;$button.Margin=[Windows.Thickness]::new(2,0,2,0);$button.Style=$script:settingsMenuResources['SettingsPreset']
     $button.Add_Click({param($sender,$event)$script:sizeSlider.Value=[double]$sender.Tag;$event.Handled=$true})
     $presets.Children.Add($button)|Out-Null;$script:settingsMenuUi.SizeButtons+=,$button
   }
@@ -246,9 +248,9 @@ function Initialize-WidgetSettingsMenu {
   Add-SettingsDivider
   $script:settingsMenuUi.Tap=Add-SettingsAction '点角色也切换内容' {param($sender,$event)$script:bubbleTapAdvance=$sender.IsChecked;Save-Settings} -Description '开启后，连续点角色就能看下一句' -Checkable -ReturnItem
   } -ReturnItem
-  Add-SettingsAction '编辑我的语录' {Open-QuoteEditor}
   $script:settingsMenuUi.MusicEnabled=Add-SettingsAction '音乐律动' {param($sender,$event)Set-WidgetMusicEnabled ([bool]$sender.IsChecked);$script:context.IsOpen=$false} -Checkable -ReturnItem
   $script:settingsMenuUi.MusicEnabled.ToolTip='先听几拍确认节奏，再跟拍。拖动后松手可甩出，碰边反弹、落地继续跟拍。关闭后恢复原位置。'
+  Add-SettingsAction '编辑我的语录' {Open-QuoteEditor}
   $script:settingsMenuUi.AutoQuotes=Add-SettingsSubmenu '自动语录' {
     $script:settingsMenuUi.AutoQuoteEnabled=Add-SettingsAction '开启自动语录' {param($sender,$event)Set-WidgetAutoQuoteSettings ([bool]$sender.IsChecked) $script:autoQuoteIntervalSeconds;Update-WidgetSettingsMenu} -Checkable -ReturnItem
     Add-SettingsDivider
