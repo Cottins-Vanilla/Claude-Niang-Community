@@ -200,16 +200,19 @@ test('totals keep input + output apart from cache, with hit rate and price cover
   assert.ok(today.coverage<1 && today.coverage>0,'unknown model lowers coverage');
   assert.equal(today.unpricedReplies,1);
 });
-test('filters: ranges, custom days, model, project, source, speed and entry',t=>{
+test('filters: ranges, custom days, model and conversation',t=>{
   const rows=sample(t),n=f=>L.filterRows(rows,f,NOW).length;
+  const lookup=L.attachConversations(rows,{files:{}});
   assert.deepEqual([n({range:'today'}),n({range:'7d'}),n({range:'30d'}),n({range:'all'}),n({range:'month'})],[3,4,5,6,5]);
   assert.equal(n({range:'custom',from:L.dayKey(Date.parse(at(1))),to:L.dayKey(Date.parse(at(1)))}),1);
   assert.equal(n({range:'custom',from:'',to:''}),6);
   assert.equal(n({range:'all',model:'claude-sonnet-5-5'}),1);
-  assert.equal(n({range:'all',project:'beta'}),1);
-  assert.equal(n({range:'all',source:'subagent'}),1);assert.equal(n({range:'all',source:'main'}),5);
-  assert.equal(n({range:'all',speed:'fast'}),1);
-  assert.equal(n({range:'all',entry:'cli'}),1);assert.equal(n({range:'all',entry:'desktop'}),5);
+  assert.equal(n({range:'all',conversation:'session:s1'}),3,'a conversation includes its subagents');
+  assert.equal(n({range:'all',conversation:'session:s2'}),1);
+  assert.equal(n({range:'all',source:'subagent',speed:'fast',entry:'cli'}),6,'fields no longer offered are ignored');
+  const options=L.filterOptions(rows,lookup).conversations;
+  assert.equal(options[0].value,'session:s1','most replies first');assert.deepEqual(options.map(o=>o.value).sort(),['session:s1','session:s2','session:s3','session:s4']);
+  assert.ok(options.every(o=>o.label.includes(' · 记录已消失')),'state shown after the name');
 });
 test('charts: record days, calendar fallback, daily/weekly series, cumulative and heatmap',t=>{
   const rows=sample(t);
@@ -240,7 +243,7 @@ test('distribution and sessions: subagents counted inside their session, search 
   assert.ok(csv.startsWith('\uFEFF项目,会话'));assert.equal(csv.trim().split('\r\n').length,1+sessions.length);
   const json=JSON.parse(L.ledgerJson(rows,{range:'all'},NOW));
   assert.equal(json.totals.replies,6);assert.equal(json.sessions.length,4);
-  assert.deepEqual(L.filterOptions(rows).entries.map(e=>e.label).sort(),['命令行','桌面端']);
+  assert.deepEqual(L.filterOptions(rows).models.map(m=>m.label).sort(),['Haiku 5.5','Mystery 1','Opus 5.5','Sonnet 5.5']);
 });
 test('合计 counts every token, also in the running sum and the heatmap',t=>{
   const root=scratch(t);
