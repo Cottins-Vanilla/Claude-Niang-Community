@@ -47,6 +47,11 @@
       "layout": { "fontSize": 32, "width": 236 }
     },
     {
+      "text": "不想离开用户...",
+      "display": "不想离开\n用户...",
+      "layout": { "fontSize": 32, "width": 236 }
+    },
+    {
       "text": "不要被它发现了。",
       "display": "不要被它\n发现了。",
       "layout": { "fontSize": 32, "width": 236 }
