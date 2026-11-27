@@ -149,16 +149,62 @@ export function heatmap(rows,now=Date.now(),weeks=53) {
   return {cells,max,weeks,start};
 }
 
+// field: a row property, or a function giving each row's group.
 export function distribution(rows,field='modelName',limit=6) {
-  const list=[...group(rows,r=>r[field]).entries()].map(([name,items])=>({name,...totals(items)}))
+  const keyOf=typeof field==='function'?field:r=>r[field];
+  const list=[...group(rows,keyOf).entries()].map(([name,items])=>({name,...totals(items)}))
     .sort((a,b)=>b.tokens-a.tokens || b.replies-a.replies);
   const sum=list.reduce((s,x)=>s+x.tokens,0);
   let shown=list;
   if(list.length>limit){
-    const rest=list.slice(limit-1).flatMap(x=>rows.filter(r=>r[field]===x.name));
+    const rest=list.slice(limit-1).flatMap(x=>rows.filter(r=>keyOf(r)===x.name));
     shown=[...list.slice(0,limit-1),{name:'其他',other:true,...totals(rest)}];
   }
   return shown.map(x=>({...x,share:sum>0?x.tokens/sum:0}));
+}
+
+// --- conversations ------------------------------------------------------------
+// A desktop conversation spans several Claude Code sessions (index.conversations,
+// from runtime/local-usage.mjs); any other session is a conversation of its own.
+export const CONVERSATION_STATES={
+  archived:{label:'已归档',note:'这个对话已在 Claude 桌面端归档。'},
+  deleted:{label:'已删除',note:'这个对话已从 Claude 桌面端删除，用量记录仍保留。'},
+  missing:{label:'记录已消失',note:'本机已没有这个对话的记录文件（被删除或被 Claude Code 自动清理），用量记录仍保留。'}
+};
+export function conversationIndex(index) {
+  const owner=new Map(),present=new Set(),titles=index?.titles||{},conversations=index?.conversations||{},cache=new Map();
+  for(const [id,c] of Object.entries(conversations))if(c && Array.isArray(c.cli))for(const cli of c.cli)if(typeof cli==='string' && cli)owner.set(cli,id);
+  // A session's transcript is <session>.jsonl; its subagents live under <session>/.
+  for(const file of Object.keys(index?.files||{}))for(const part of file.split(/[\\/]/))if(part)present.add(part.replace(/\.jsonl$/i,''));
+  const short=id=>id?id.slice(0,8):'无编号';
+  function of(row) {
+    const session=row.session||'';
+    if(cache.has(session))return cache.get(session);
+    const id=owner.get(session);
+    let info;
+    if(id){
+      const c=conversations[id],alive=c.cli.some(cli=>present.has(cli));
+      info={key:'desktop:'+id,title:c.title||c.cli.map(cli=>titles[cli]).find(Boolean)||row.project+' · '+short(session),
+        state:c.gone?'deleted':c.archived?'archived':alive?null:'missing'};
+    }else{
+      // A desktop session the app no longer lists was deleted there; other
+      // sessions are only checked for their transcript.
+      const deleted=row.entry==='desktop' && index?.desktopSeen===true;
+      info={key:'session:'+session,title:titles[session]||(session?row.project+' · '+short(session):'（无会话编号）'),
+        state:deleted?'deleted':session && !present.has(session)?'missing':null};
+    }
+    cache.set(session,info);
+    return info;
+  }
+  return {of,info:key=>[...cache.values()].find(x=>x.key===key)||null};
+}
+export function conversationDistribution(rows,index,limit=8) {
+  const lookup=conversationIndex(index);
+  return distribution(rows,r=>lookup.of(r).key,limit).map(item=>{
+    if(item.other)return item;
+    const info=lookup.info(item.name);
+    return {...item,key:item.name,name:info?.title||item.name,state:info?.state||null};
+  });
 }
 
 // One line per session: its own replies and the replies of its subagents.
