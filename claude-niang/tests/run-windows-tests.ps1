@@ -153,6 +153,22 @@ try{
       Assert ($lines[1]-like '*未提供重置时间*' -and $lines[1]-notlike '*尚未开始计时*') 'A used window without a reset time was called unstarted'
     }finally{$script:status=$previous}
   }
+  Case 'Tapping the character advances the bubble by default, once for old settings too' {
+    $default=[regex]::Match([IO.File]::ReadAllText((Join-Path $appDir 'widget.ps1'),[Text.Encoding]::UTF8),'\$script:bubbleTapAdvance=\$(true|false)').Groups[1].Value
+    Assert ($default-eq 'true') 'The tap-to-advance default is not on'
+    $file=Join-Path $appDir 'runtime\widget-settings.ps1'
+    foreach($name in @('Get-WidgetSettingFlag','Get-WidgetSettingNumber','Import-WidgetSettings','Save-Settings')){. (Import-Function $file $name)}
+    $kept=@{tap=$script:bubbleTapAdvance;bubble=$script:bubbleScale;file=$script:settingsFile}
+    try{
+      $script:bubbleTapAdvance=$true;Import-WidgetSettings ([pscustomobject]@{layoutVersion=2;bubbleTapAdvance=$false})
+      Assert $script:bubbleTapAdvance 'An off value saved under the old default was kept'
+      $script:bubbleTapAdvance=$true;Import-WidgetSettings ([pscustomobject]@{layoutVersion=2;bubbleTapAdvance=$false;tapAdvanceVersion=2})
+      Assert (!$script:bubbleTapAdvance) 'An off choice saved after the change was overridden'
+      $script:settingsFile=Join-Path $scratch 'tap-settings.json';Save-Settings
+      $saved=Read-WidgetJsonFile $script:settingsFile
+      Assert ($saved.tapAdvanceVersion-eq 2 -and $saved.bubbleTapAdvance-eq $false) 'Saved settings do not mark the choice as made under the new default'
+    }finally{$script:bubbleTapAdvance=$kept.tap;$script:bubbleScale=$kept.bubble;$script:settingsFile=$kept.file}
+  }
   Case 'Credit tooltip uses its own timestamp and preserves independent errors' {
     $previous=$script:status;$creditAt=1700000000000L
     try{
