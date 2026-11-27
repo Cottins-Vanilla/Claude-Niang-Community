@@ -4,6 +4,11 @@
 
 2.0.0 起是社区维护版（[Cottins-Vanilla/Claude-Niang-Community](https://github.com/Cottins-Vanilla/Claude-Niang-Community)）。1.3.3 及更早的版本由原作者发布，下载链接指向原仓库 [Gryphus-Triune/Claude-Niang](https://github.com/Gryphus-Triune/Claude-Niang)。
 
+## 未发布
+
+### 其他
+- 版本号和发布规范补充测试版：各处的命名对照、找上一个正式版的方法，以及测试版之后发正式版时发布说明怎么写；README 和 CONTRIBUTING 同步说明。
+
 ## 2.1.0-beta.6 — 2026-11-27
 
 测试版：账户总览按对话统计用量，并标出已归档、已删除的对话；筛选更简洁，悬停说明增加「合计」。

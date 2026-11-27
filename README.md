@@ -261,6 +261,8 @@ claude.ai 的网页接口不是公开 API，随时可能变化而失效。请遵
 
 一个版本里同时有新功能和修复时，按新功能算（Y 递增）。每个版本只对应一个 `vX.Y.Z` 标签和一个 Release，已经公开的版本不会覆盖。
 
+测试版写作 `X.Y.Z-beta.N`，例如 `2.1.0-beta.6`：`X.Y.Z` 是即将发布的正式版，`N` 从 1 依次递增。测试版在发布页标为“预发布”，安装包名带完整版本（如 `claude-niang-v2.1.0-beta.6-windows.zip`），只提醒把更新范围设为「测试版」的用户；本页的版本号和下载链接始终指向最新正式版。
+
 ## 开发与贡献
 
 测试、构建、提交检查和发布方法见 [CONTRIBUTING.md](CONTRIBUTING.md)。克隆后先运行一次 `git config core.hooksPath .githooks`，启用提交前检查：它会拦下临时文件、本机路径、私人邮箱和常见令牌。工作流配置在 `.github/workflows/`；实际运行结果以 [GitHub Actions](https://github.com/Cottins-Vanilla/Claude-Niang-Community/actions) 为准。
