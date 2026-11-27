@@ -299,6 +299,19 @@ function syncFilterControls(){
   $('filter-panel').classList.toggle('custom',(state.draftRange??f.range)==='custom');
   for(const [id,key] of [['f-from','from'],['f-to','to'],['f-model','model'],['f-project','project'],['f-source','source'],['f-speed','speed'],['f-entry','entry']])$(id).value=f[key]||'';
 }
+// Opens or closes the filter panel to match state.filterOpen. Safe to call on
+// every render: nothing moves unless the state changed.
+function showFilterPanel(){
+  const box=$('filter-collapse'),open=state.filterOpen;
+  $('toggle-filter').setAttribute('aria-expanded',String(open));
+  if(box.classList.contains('open')===open)return;
+  box.classList.remove('settled');box.classList.toggle('open',open);box.inert=!open;
+  const instant=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(open && instant)box.classList.add('settled');
+}
+$('filter-collapse').addEventListener('transitionend',event=>{
+  if(event.target===event.currentTarget && event.propertyName==='grid-template-rows' && state.filterOpen)event.currentTarget.classList.add('settled');
+});
 function activeFilters(){
   const f=state.filter,chips=[];
   const rangeLabel={today:'今日','7d':'近七天','30d':'近三十天',month:'本月',all:'全部时间',custom:(f.from||'最早')+' 至 '+(f.to||'今天')}[f.range];
@@ -316,7 +329,7 @@ function renderLedger(){
   syncFilterControls();
   const chips=activeFilters(),extra=chips.length-1;
   $('filter-label').textContent=extra?'筛选 · '+extra:'筛选';
-  $('toggle-filter').setAttribute('aria-expanded',String(state.filterOpen));$('filter-panel').hidden=!state.filterOpen;
+  showFilterPanel();
   $('active-filters').replaceChildren(...chips.map(c=>el('span',{class:'chip',text:c})));
   const now=Date.now(),rows=L.filterRows(state.rows,state.filter,now),t=L.totals(rows);
   const subReplies=rows.filter(r=>r.source==='subagent').length;
@@ -388,7 +401,8 @@ $('win-min').addEventListener('click',()=>send('win-min'));
 $('win-max').addEventListener('click',()=>send('win-max'));
 $('win-close').addEventListener('click',()=>send('win-close'));
 $('usage-page').addEventListener('click',()=>send('open-usage-page'));
-$('toggle-filter').addEventListener('click',()=>{state.filterOpen=!state.filterOpen;state.draftRange=null;render();});
+// Only the panel changes here; the ledger itself is redrawn when a filter is applied.
+$('toggle-filter').addEventListener('click',()=>{state.filterOpen=!state.filterOpen;state.draftRange=null;syncFilterControls();showFilterPanel();});
 document.querySelectorAll('#range button').forEach(b=>b.addEventListener('click',()=>{state.draftRange=b.dataset.range;syncFilterControls();}));
 $('filter-apply').addEventListener('click',()=>{
   state.filter={range:state.draftRange??state.filter.range,from:$('f-from').value,to:$('f-to').value,model:$('f-model').value,project:$('f-project').value,source:$('f-source').value,speed:$('f-speed').value,entry:$('f-entry').value};
