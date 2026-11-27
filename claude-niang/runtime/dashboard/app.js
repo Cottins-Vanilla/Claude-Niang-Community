@@ -11,9 +11,15 @@ const params=new URLSearchParams(location.search);
 const snapshot=params.get('snapshot')==='1';
 if(snapshot)document.documentElement.classList.add('snapshot');
 
+// Per-viewer choices kept between openings of the window (WebView2's own
+// storage); a page without storage simply starts with the defaults.
+function readPref(name){try{return localStorage.getItem('claude-niang.'+name);}catch{return null;}}
+function writePref(name,value){try{localStorage.setItem('claude-niang.'+name,value);}catch{}}
+
 const state={status:null,orgFile:null,claudeRunning:false,scanning:false,version:'',index:null,rows:[],
   haveState:false,haveUsage:false,view:String(params.get('view')).startsWith('ledger')?'ledger':'overview',
-  filter:{...L.EMPTY_FILTER},chartMode:'day',search:'',page:0,refreshingSince:0,refreshBase:null,filterOpen:false};
+  filter:{...L.EMPTY_FILTER},chartMode:'day',search:'',page:0,refreshingSince:0,refreshBase:null,filterOpen:false,
+  conversationMode:readPref('conversationMode')==='all'?'all':'active',openGroups:new Set(),fullGroups:new Set()};
 const $=id=>document.getElementById(id);
 const PAGE_SIZE=10;
 
@@ -94,16 +100,51 @@ function metric(label,value,unit,note,tipHtml){
     el('div',{class:'metric-note',text:note}));
 }
 function bar(percent){return el('div',{class:'bar'},el('i',{style:`width:${Math.max(0,Math.min(100,percent))}%`}));}
-function shareList(list,emptyText){
-  if(!list.length)return el('div',{class:'empty',text:emptyText});
-  return el('div',{},list.map(item=>{
-    const state=item.state?L.CONVERSATION_STATES[item.state]:null;
-    const tip=usageTip(item.name,item)+(state?'<div class="tip-note">'+esc(state.note)+'</div>':'');
-    return el('div',{class:'share-row'+(item.other?' other':''),dataset:{tip}},
-    el('div',{class:'share-top'},el('span',{class:'share-label'},el('span',{class:'share-name',text:item.name}),state?el('span',{class:'tag state '+item.state,text:state.label}):null),
+function shareRow(item,{cls='',extra=null,tip=null}={}){
+  const mark=item.kind!=='group' && item.state?L.CONVERSATION_STATES[item.state]:null;
+  const tipHtml=tip??usageTip(item.name,item)+(mark?'<div class="tip-note">'+esc(mark.note)+'</div>':'');
+  return el('div',{class:'share-row'+(item.other?' other':'')+(cls?' '+cls:''),dataset:{tip:tipHtml}},
+    el('div',{class:'share-top'},el('span',{class:'share-label'},el('span',{class:'share-name',text:item.name}),mark?el('span',{class:'tag state '+item.state,text:mark.label}):null,extra),
       el('span',{class:'share-value'},L.formatTokens(item.tokens)+' · '+(item.share*100).toFixed(1)+'%',el('b',{text:item.coverage?L.formatCost(item.cost):'未定价'}))),
     bar(item.share*100));
-  }));
+}
+function shareList(list,emptyText){
+  if(!list.length)return el('div',{class:'empty',text:emptyText});
+  return el('div',{},list.map(item=>shareRow(item)));
+}
+// 对话分布: a group line (已归档 / 已删除 / 记录已消失) opens to its five largest
+// conversations, and 显示其余 shows the rest. Which groups are open survives the
+// redraw that every usage update causes.
+const GROUP_PREVIEW=5;
+function conversationList(lines,emptyText){
+  if(!lines.length)return el('div',{class:'empty',text:emptyText});
+  const box=el('div');
+  for(const line of lines){
+    if(line.kind!=='group'){box.append(shareRow(line));continue;}
+    const open=state.openGroups.has(line.state),full=state.fullGroups.has(line.state),note=L.CONVERSATION_STATES[line.state].note;
+    const head=shareRow(line,{cls:'group'+(open?' open':''),extra:el('span',{class:'tag count',text:line.count+' 个对话'}),
+      tip:usageTip(line.name+' · '+line.count+' 个对话',line)+'<div class="tip-note">'+esc(note)+'</div>'});
+    head.setAttribute('role','button');head.tabIndex=0;head.setAttribute('aria-expanded',String(open));
+    const rest=line.members.slice(GROUP_PREVIEW);
+    const label=shown=>shown?'收起':'显示其余 '+rest.length+' 个';
+    const more=rest.length?el('button',{class:'text-button share-more',type:'button',text:label(full)}):null;
+    const kids=el('div',{class:'share-kids'+(full?' full':'')},el('div',{},el('div',{class:'share-kids-inner'},
+      ...line.members.slice(0,GROUP_PREVIEW).map(c=>shareRow(c)),el('div',{class:'share-extra'},...rest.map(c=>shareRow(c))),more)));
+    kids.inert=!open;
+    const toggle=()=>{
+      const now=!head.classList.contains('open');
+      head.classList.toggle('open',now);head.setAttribute('aria-expanded',String(now));kids.inert=!now;
+      if(now)state.openGroups.add(line.state);else state.openGroups.delete(line.state);
+    };
+    head.addEventListener('click',toggle);
+    head.addEventListener('keydown',event=>{if(event.key==='Enter' || event.key===' '){event.preventDefault();toggle();}});
+    more?.addEventListener('click',()=>{
+      const now=!kids.classList.contains('full');kids.classList.toggle('full',now);more.textContent=label(now);
+      if(now)state.fullGroups.add(line.state);else state.fullGroups.delete(line.state);
+    });
+    box.append(head,kids);
+  }
+  return box;
 }
 
 // Bars of input + output per point; the last one highlighted.
@@ -357,8 +398,10 @@ function renderLedger(){
   }
   $('activity-note').textContent=note;
   $('models').replaceChildren(shareList(L.distribution(rows,'modelName',6),'没有符合条件的记录。'));
-  $('conversations').replaceChildren(shareList(L.conversationDistribution(rows,state.index,8),'没有符合条件的记录。'));
-  $('model-note').textContent=$('conversation-note').textContent='按 Tokens 占比';
+  const share=L.conversationShare(rows,state.index,{mode:state.conversationMode});
+  document.querySelectorAll('#conversation-mode button').forEach(b=>{b.classList.toggle('selected',b.dataset.mode===state.conversationMode);b.querySelector('small').textContent=share.counts[b.dataset.mode];});
+  $('conversations').replaceChildren(conversationList(share.lines,state.conversationMode==='active' && share.counts.all?'没有进行中的对话，切到「全部」查看。':'没有符合条件的记录。'));
+  $('model-note').textContent='按 Tokens 占比';
   // Sessions.
   const all=L.searchSessions(L.sessionTable(rows),state.search);
   const pages=Math.max(1,Math.ceil(all.length/PAGE_SIZE));state.page=Math.min(state.page,pages-1);
@@ -411,6 +454,7 @@ $('filter-apply').addEventListener('click',()=>{
   state.draftRange=null;state.page=0;render();syncFilterControls();
 });
 $('filter-reset').addEventListener('click',()=>{state.filter={...L.EMPTY_FILTER,range:'all'};state.draftRange=null;state.page=0;render();syncFilterControls();});
+document.querySelectorAll('#conversation-mode button').forEach(b=>b.addEventListener('click',()=>{state.conversationMode=b.dataset.mode;writePref('conversationMode',b.dataset.mode);render();}));
 document.querySelectorAll('#chart-mode button').forEach(b=>b.addEventListener('click',()=>{state.chartMode=b.dataset.mode;render();}));
 $('session-search').addEventListener('input',event=>{state.search=event.target.value;state.page=0;render();});
 $('export-csv').addEventListener('click',()=>exportData('csv'));

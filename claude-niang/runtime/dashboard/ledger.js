@@ -200,13 +200,33 @@ export function conversationIndex(index) {
   }
   return {of,info:key=>[...cache.values()].find(x=>x.key===key)||null};
 }
-export function conversationDistribution(rows,index,limit=8) {
-  const lookup=conversationIndex(index);
-  return distribution(rows,r=>lookup.of(r).key,limit).map(item=>{
-    if(item.other)return item;
-    const info=lookup.info(item.name);
-    return {...item,key:item.name,name:info?.title||item.name,state:info?.state||null};
-  });
+// The 对话分布 panel. Shares are always of all usage in the rows, so the lines
+// of mode 'active' add up to less than 100% when older conversations exist.
+// - 'active': the conversations still in use, `singles` of them and 其他.
+// - 'all': those plus one group per state (已归档 / 已删除 / 记录已消失) holding its
+//   conversations, ordered by usage like any other line.
+export const CONVERSATION_GROUP_ORDER=['archived','deleted','missing'];
+export function conversationShare(rows,index,{mode='active',singles=7}={}) {
+  const lookup=conversationIndex(index),all=totals(rows).tokens;
+  const share=t=>all>0?t.tokens/all:0;
+  const list=[...group(rows,r=>lookup.of(r).key).entries()].map(([key,items])=>{
+    const info=lookup.info(key),t=totals(items);
+    return {kind:'conversation',key,name:info?.title||key,state:info?.state||null,...t,share:share(t),rows:items};
+  }).sort((a,b)=>b.tokens-a.tokens || b.replies-a.replies);
+  const active=list.filter(c=>!c.state),counts={active:active.length,all:list.length};
+  const lines=[];
+  if(mode==='all')for(const state of CONVERSATION_GROUP_ORDER){
+    const members=list.filter(c=>c.state===state);
+    if(!members.length)continue;
+    const t=totals(members.flatMap(c=>c.rows));
+    lines.push({kind:'group',key:'group:'+state,state,name:CONVERSATION_STATES[state].label,count:members.length,...t,share:share(t),members});
+  }
+  lines.push(...active.slice(0,singles));
+  const rest=active.slice(singles);
+  lines.sort((a,b)=>b.tokens-a.tokens);
+  if(rest.length){const t=totals(rest.flatMap(c=>c.rows));lines.push({kind:'other',key:'other',other:true,name:'其他 '+rest.length+' 个',...t,share:share(t)});}
+  const strip=({rows:_,...item})=>item;
+  return {counts,lines:lines.map(line=>line.members?{...strip(line),members:line.members.map(strip)}:strip(line))};
 }
 
 // One line per session: its own replies and the replies of its subagents.

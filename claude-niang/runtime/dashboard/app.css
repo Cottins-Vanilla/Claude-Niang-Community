@@ -276,6 +276,27 @@ html.maximized .window-controls .restore { display: block; }.page-header p { mar
 .share-value b { color: var(--text); font-weight: 650; margin-left: 8px; }
 .share-row .bar { height: 6px; margin: 7px 0 0; }
 .share-row.other .bar > i { background: #d9cec5; }
+/* 对话分布: groups of older conversations open to their members. */
+.segmented.compact button { min-height: 26px; padding: 0 10px; font-size: 12.5px; }
+.segmented small { margin-left: 4px; color: var(--muted); font-size: 11.5px; font-weight: 400; }
+.share-row.group { cursor: pointer; }
+.share-row.group .bar > i { background: #d9cec5; }
+.share-row.group .share-name::before { content: "▸"; display: inline-block; width: 14px; color: var(--muted); transition: transform .2s ease; }
+.share-row.group.open .share-name::before { transform: rotate(90deg); }
+.share-row.group:focus-visible { outline: 2px solid var(--accent-tint); outline-offset: 2px; border-radius: 6px; }
+.tag.count { flex: none; height: 18px; padding: 0 6px; font-size: 11px; }
+.share-kids { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .25s cubic-bezier(.2, .8, .2, 1); }
+.share-kids > div { min-height: 0; overflow: hidden; }
+.share-row.group.open + .share-kids { grid-template-rows: 1fr; }
+.share-kids + .share-row { border-top: 1px solid #f4efea; }
+.share-kids-inner { margin: 2px 0 6px 14px; padding-left: 12px; border-left: 2px solid var(--track); }
+.share-kids .share-row { padding: 6px 0; }
+.share-kids .share-name { font-weight: 500; }
+.share-extra { display: none; }
+.share-kids.full .share-extra { display: block; }
+.share-extra > .share-row:first-child { border-top: 1px solid #f4efea; }
+.share-more { display: block; padding: 6px 0 2px; font-size: 12.5px; }
+@media (prefers-reduced-motion: reduce) { .share-kids, .share-row.group .share-name::before { transition: none; } }
 
 /* --- ledger ----------------------------------------------------------------------- */
 /* The filter panel expands (grid rows 0fr → 1fr) and slides in; while it moves

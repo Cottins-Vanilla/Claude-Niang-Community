@@ -106,18 +106,48 @@ test('the conversation share groups sessions and marks archived, deleted and van
   let {index}=scanLocalUsage({root,now:NOW,desktopDirs:[apps]});
   fs.rmSync(deleted);fs.rmSync(path.join(root,'E--Work-alpha','c2.jsonl'));
   ({index}=scanLocalUsage({root,index,now:NOW,desktopDirs:[apps]}));
-  const list=L.conversationDistribution(L.rowsFromRecords(index.records),index,8);
-  const by=Object.fromEntries(list.map(x=>[x.name,x]));
-  assert.equal(list[0].name,'桌面对话');assert.equal(by['桌面对话'].output,600,'sessions of one desktop conversation are added up');
+  const rows=L.rowsFromRecords(index.records);
+  const {lines,counts}=L.conversationShare(rows,index,{mode:'all'});
+  const flat=lines.flatMap(x=>x.members||[x]),by=Object.fromEntries(flat.map(x=>[x.name,x]));
+  assert.deepEqual(counts,{active:2,all:5});
+  assert.equal(lines[0].name,'桌面对话');assert.equal(by['桌面对话'].output,600,'sessions of one desktop conversation are added up');
   assert.equal(by['桌面对话'].state,null);
   assert.equal(by['归档的对话'].state,'archived');
   assert.equal(by['删掉的对话'].state,'deleted');
   assert.equal(by['命令行对话'].state,null);
   assert.equal(by['alpha · c2abcdef'].state,'missing','a session whose transcript is gone is marked');
+  // Only conversations in use by default, with shares of all usage.
+  const active=L.conversationShare(rows,index).lines;
+  assert.deepEqual(active.map(x=>x.name),['桌面对话','命令行对话']);
+  assert.ok(active.reduce((s,x)=>s+x.share,0)<1,'shares are of all usage, not of the conversations shown');
   // A desktop session the app never listed (deleted before the scan saw it).
   const unseen=L.conversationIndex(index).of({session:'zz9',entry:'desktop',project:'alpha'});
   assert.equal(unseen.state,'deleted');
   assert.equal(L.conversationIndex({files:{}}).of({session:'zz9',entry:'desktop',project:'alpha'}).state,'missing','without the app nothing is called deleted');
+});
+
+test('the conversation share folds older conversations into one group per state, ordered by usage',()=>{
+  const conv=(i,state,output)=>({id:'c'+i,state,output});
+  const list=[conv(1,null,500),conv(2,null,80),...Array.from({length:7},(_,i)=>conv(10+i,null,10+i)),
+    ...Array.from({length:6},(_,i)=>conv(20+i,'deleted',100+i)),conv(30,'archived',5)];
+  const records={},conversations={},files={};
+  list.forEach((c,i)=>{
+    records['m'+i]=[NOW,'claude-opus-5-5','alpha',c.id,0,c.output,0,0,0,0,'standard','claude-desktop'];
+    conversations['local_'+c.id]={title:'对话 '+c.id,archived:c.state==='archived',gone:c.state==='deleted',cli:[c.id]};
+    files['x/'+c.id+'.jsonl']={};
+  });
+  const index={records,conversations,files,desktopSeen:true},rows=L.rowsFromRecords(records);
+  const active=L.conversationShare(rows,index);
+  assert.deepEqual(active.counts,{active:9,all:16});
+  assert.equal(active.lines.length,8,'seven conversations and 其他');
+  assert.equal(active.lines.at(-1).name,'其他 2 个');assert.ok(active.lines.every(x=>x.kind!=='group'));
+  const all=L.conversationShare(rows,index,{mode:'all'}).lines;
+  assert.deepEqual(all.map(x=>x.kind==='group'?x.name+'×'+x.count:x.name).slice(0,3),['已删除×6','对话 c1','对话 c2'],'a group sorts by its total like any line');
+  const deleted=all.find(x=>x.kind==='group' && x.state==='deleted');
+  assert.equal(deleted.output,615);assert.deepEqual(deleted.members.map(x=>x.output),[105,104,103,102,101,100]);
+  assert.equal(all.find(x=>x.state==='archived' && x.kind==='group').count,1);
+  assert.equal(all.at(-1).name,'其他 2 个','groups do not push conversations into 其他');
+  assert.ok(Math.abs(all.reduce((s,x)=>s+x.share,0)-1)<1e-9,'everything adds up to all usage');
 });
 
 test('an index from the previous version keeps rows whose transcripts are gone',t=>{
