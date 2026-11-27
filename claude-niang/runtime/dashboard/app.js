@@ -200,7 +200,7 @@ function heatmapChart(rows){
 function renderHeader(){
   const ledger=state.view==='ledger';
   $('title').textContent=ledger?'用量账本':'账户总览';
-  $('subtitle').textContent=ledger?'按时间、模型、项目、来源筛选本机 Claude Code 用量。':'查看各个组织的额度与本机 Claude Code 用量。';
+  $('subtitle').textContent=ledger?'按时间、模型、对话筛选本机 Claude Code 用量。':'查看各个组织的额度与本机 Claude Code 用量。';
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('selected',b.dataset.view===state.view));
   $('overview').hidden=ledger;$('ledger').hidden=!ledger;
   $('toggle-filter').hidden=!ledger;
@@ -340,7 +340,7 @@ function syncFilterControls({values=true}={}){
   const f=state.filter;
   document.querySelectorAll('#range button').forEach(b=>b.classList.toggle('selected',b.dataset.range===(state.draftRange??f.range)));
   $('filter-panel').classList.toggle('custom',(state.draftRange??f.range)==='custom');
-  if(values)for(const [id,key] of [['f-from','from'],['f-to','to'],['f-model','model'],['f-project','project'],['f-source','source'],['f-speed','speed'],['f-entry','entry']])$(id).value=f[key]||'';
+  if(values)for(const [id,key] of [['f-from','from'],['f-to','to'],['f-model','model'],['f-conversation','conversation']])$(id).value=f[key]||'';
 }
 // Opens or closes the filter panel to match state.filterOpen. Safe to call on
 // every render: nothing moves unless the state changed.
@@ -360,15 +360,12 @@ function activeFilters(){
   const rangeLabel={today:'今日','7d':'近七天','30d':'近三十天',month:'本月',all:'全部时间',custom:(f.from||'最早')+' 至 '+(f.to||'今天')}[f.range];
   chips.push(rangeLabel);
   if(f.model)chips.push('模型：'+L.modelName(f.model));
-  if(f.project)chips.push('项目：'+f.project);
-  if(f.source)chips.push('来源：'+L.SOURCE_LABELS[f.source]);
-  if(f.speed)chips.push('速度：'+L.SPEED_LABELS[f.speed]);
-  if(f.entry)chips.push('入口：'+(L.ENTRY_LABELS[f.entry]||f.entry));
+  if(f.conversation)chips.push('对话：'+(state.conversations?.info(f.conversation)?.title||'已不在记录中'));
   return chips;
 }
 function renderLedger(){
-  const options=L.filterOptions(state.rows);
-  fillSelect($('f-model'),options.models,'全部模型');fillSelect($('f-project'),options.projects,'全部项目');fillSelect($('f-entry'),options.entries,'全部入口');
+  const options=L.filterOptions(state.rows,state.conversations);
+  fillSelect($('f-model'),options.models,'全部模型');fillSelect($('f-conversation'),options.conversations,'全部对话');
   syncFilterControls({values:!state.filterOpen});
   const chips=activeFilters(),extra=chips.length-1;
   $('filter-label').textContent=extra?'筛选 · '+extra:'筛选';
@@ -450,7 +447,7 @@ $('usage-page').addEventListener('click',()=>send('open-usage-page'));
 $('toggle-filter').addEventListener('click',()=>{state.filterOpen=!state.filterOpen;state.draftRange=null;syncFilterControls();showFilterPanel();});
 document.querySelectorAll('#range button').forEach(b=>b.addEventListener('click',()=>{state.draftRange=b.dataset.range;syncFilterControls();}));
 $('filter-apply').addEventListener('click',()=>{
-  state.filter={range:state.draftRange??state.filter.range,from:$('f-from').value,to:$('f-to').value,model:$('f-model').value,project:$('f-project').value,source:$('f-source').value,speed:$('f-speed').value,entry:$('f-entry').value};
+  state.filter={range:state.draftRange??state.filter.range,from:$('f-from').value,to:$('f-to').value,model:$('f-model').value,conversation:$('f-conversation').value};
   state.draftRange=null;state.page=0;render();syncFilterControls();
 });
 $('filter-reset').addEventListener('click',()=>{state.filter={...L.EMPTY_FILTER,range:'all'};state.draftRange=null;state.page=0;render();syncFilterControls();});
@@ -508,7 +505,7 @@ function handle(message){
     const marker=state.status?.checkedAt??state.status?.observedAt??null;
     if(state.refreshingSince && marker!==state.refreshBase && previous!==null)state.refreshingSince=0;
   }else if(message.type==='usage'){
-    state.index=message.index;state.rows=L.rowsFromRecords(message.index?.records);state.haveUsage=true;
+    state.index=message.index;state.rows=L.rowsFromRecords(message.index?.records);state.conversations=L.attachConversations(state.rows,message.index);state.haveUsage=true;
   }else if(message.type==='toast'){toast(message.text);return;}
   else if(message.type==='window'){
     document.documentElement.classList.toggle('maximized',!!message.maximized);

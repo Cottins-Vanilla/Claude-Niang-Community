@@ -24,8 +24,6 @@ export function entryKind(entry) {
   return 'other';
 }
 export const ENTRY_LABELS={desktop:'桌面端',cli:'命令行',ide:'IDE',sdk:'SDK',other:'其他',unknown:'未记录'};
-export const SOURCE_LABELS={main:'主会话',subagent:'子代理'};
-export const SPEED_LABELS={standard:'标准',fast:'快速',unknown:'未记录'};
 
 export function rowsFromRecords(records) {
   const rows=[];
@@ -70,13 +68,13 @@ export function rangeBounds(range,now=Date.now(),{from=null,to=null}={}) {
   }
 }
 
-export const EMPTY_FILTER={range:'30d',from:'',to:'',model:'',project:'',source:'',speed:'',entry:''};
+// conversation: a key from attachConversations (one desktop conversation or one session).
+export const EMPTY_FILTER={range:'30d',from:'',to:'',model:'',conversation:''};
 export function filterRows(rows,filter=EMPTY_FILTER,now=Date.now()) {
   const f={...EMPTY_FILTER,...filter};
   const [start,end]=rangeBounds(f.range,now,f);
   return rows.filter(r=>r.time>=start && r.time<end &&
-    (!f.model || r.model===f.model) && (!f.project || r.project===f.project) &&
-    (!f.source || r.source===f.source) && (!f.speed || r.speed===f.speed) && (!f.entry || r.entry===f.entry));
+    (!f.model || r.model===f.model) && (!f.conversation || r.conversation===f.conversation));
 }
 
 // --- totals --------------------------------------------------------------------
@@ -244,9 +242,21 @@ export function searchSessions(list,query) {
   return list.filter(s=>s.session.toLowerCase().includes(q) || s.projects.some(p=>p.toLowerCase().includes(q)) || s.models.some(m=>m.toLowerCase().includes(q)));
 }
 
-export function filterOptions(rows) {
+// Gives every row its conversation key (row.conversation) and returns the lookup
+// that names them; call once when the index arrives.
+export function attachConversations(rows,index) {
+  const lookup=conversationIndex(index);
+  for(const r of rows)r.conversation=lookup.of(r).key;
+  return lookup;
+}
+// Choices of the filter panel; conversations are named by title, with their state.
+export function filterOptions(rows,lookup=null) {
   const count=field=>[...group(rows,r=>r[field]).entries()].map(([value,items])=>({value,count:items.length})).sort((a,b)=>b.count-a.count);
-  return {models:count('model').map(x=>({...x,label:modelName(x.value)})),projects:count('project'),entries:count('entry').map(x=>({...x,label:ENTRY_LABELS[x.value]||x.value}))};
+  const conversations=count('conversation').filter(x=>x.value).map(x=>{
+    const info=lookup?.info(x.value),mark=info?.state?CONVERSATION_STATES[info.state].label:'';
+    return {...x,label:(info?.title||x.value)+(mark?' · '+mark:'')};
+  });
+  return {models:count('model').map(x=>({...x,label:modelName(x.value)})),conversations};
 }
 
 // --- formatting and export -------------------------------------------------------
