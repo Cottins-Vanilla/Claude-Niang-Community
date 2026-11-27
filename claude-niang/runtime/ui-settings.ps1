@@ -178,6 +178,12 @@ function Initialize-WidgetSettingsMenu {
 '@)
   $script:settingsMenuUi.Bubble=Add-SettingsAction '查看额度' {if(!$script:collapsed -and $script:bubbleMode-eq 'quota'){Hide-Quota}else{Show-Quota}} -ReturnItem
   Add-SettingsAction '刷新额度' {Request-Refresh}
+  $script:settingsMenuUi.Alerts=Add-SettingsSubmenu '额度提醒' {
+    $script:settingsMenuUi.LowQuota=Add-SettingsAction '低额度提醒' {param($sender,$event)$script:lowQuotaAlert=[bool]$sender.IsChecked;Save-Settings} -Description '读取到新额度后，5 小时剩 20%、每周剩 15% 时提醒' -Checkable -ReturnItem
+    $script:settingsMenuUi.ResetAlert=Add-SettingsAction '额度重置提醒' {param($sender,$event)$script:resetAlert=[bool]$sender.IsChecked;Save-Settings} -Description '读取后发现额度重置时提醒' -Checkable -ReturnItem
+    $script:settingsMenuUi.ResetAutoRead=Add-SettingsAction '重置后自动读取' {param($sender,$event)$script:resetAutoRead=[bool]$sender.IsChecked;Save-Settings} -Description '到重置时间后自动读一次，平时仍手动刷新' -Checkable -ReturnItem
+  } -ReturnItem
+  Add-SettingsAction '账户总览' {Open-WidgetDashboard}
   Add-SettingsDivider
   $script:settingsMenuUi.Account=Add-SettingsSubmenu 'Claude 账号' {
     $state=New-SettingsText '' 12 '#9A7766';$state.TextWrapping=[Windows.TextWrapping]::Wrap
@@ -192,12 +198,6 @@ function Initialize-WidgetSettingsMenu {
     Add-SettingsDivider
     Add-SettingsAction '退出登录' {Start-WidgetLogout} -Description '只清除 Claude 娘里的登录，不影响桌面端'
   } -ReturnItem
-  $script:settingsMenuUi.Alerts=Add-SettingsSubmenu '额度提醒' {
-    $script:settingsMenuUi.LowQuota=Add-SettingsAction '低额度提醒' {param($sender,$event)$script:lowQuotaAlert=[bool]$sender.IsChecked;Save-Settings} -Description '读取到新额度后，5 小时剩 20%、每周剩 15% 时提醒' -Checkable -ReturnItem
-    $script:settingsMenuUi.ResetAlert=Add-SettingsAction '额度重置提醒' {param($sender,$event)$script:resetAlert=[bool]$sender.IsChecked;Save-Settings} -Description '读取后发现额度重置时提醒' -Checkable -ReturnItem
-    $script:settingsMenuUi.ResetAutoRead=Add-SettingsAction '重置后自动读取' {param($sender,$event)$script:resetAutoRead=[bool]$sender.IsChecked;Save-Settings} -Description '到重置时间后自动读一次，平时仍手动刷新' -Checkable -ReturnItem
-  } -ReturnItem
-  Add-SettingsAction '账户总览' {Open-WidgetDashboard}
   Add-SettingsDivider
   $script:settingsMenuUi.Character=Add-SettingsAction '更换形象' {Open-WidgetCharacterGallery} -ReturnItem
   $script:settingsMenuUi.Character.ToolTip='选择形象或添加电脑上的图片'
