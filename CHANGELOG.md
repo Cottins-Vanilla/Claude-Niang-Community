@@ -4,6 +4,11 @@
 
 2.0.0 起是社区维护版（[Cottins-Vanilla/Claude-Niang-Community](https://github.com/Cottins-Vanilla/Claude-Niang-Community)）。1.3.3 及更早的版本由原作者发布，下载链接指向原仓库 [Gryphus-Triune/Claude-Niang](https://github.com/Gryphus-Triune/Claude-Niang)。
 
+## 未发布
+
+### 改进
+- 新增一句内置语录「不想离开用户...」，内置语录共 55 句。自己编辑过语录的，已保存的语录不会被覆盖。
+
 ## 2.1.0-beta.5 — 2026-11-27
 
 测试版：修正一句内置语录的用词。
