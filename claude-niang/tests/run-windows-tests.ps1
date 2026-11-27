@@ -153,6 +153,13 @@ try{
       Assert ($lines[1]-like '*未提供重置时间*' -and $lines[1]-notlike '*尚未开始计时*') 'A used window without a reset time was called unstarted'
     }finally{$script:status=$previous}
   }
+  Case 'Tapping the character advances the bubble by default but keeps a saved choice' {
+    $default=[regex]::Match([IO.File]::ReadAllText((Join-Path $appDir 'widget.ps1'),[Text.Encoding]::UTF8),'\$script:bubbleTapAdvance=\$(true|false)').Groups[1].Value
+    Assert ($default-eq 'true') 'The tap-to-advance default is not on'
+    . (Import-Function (Join-Path $appDir 'runtime\widget-settings.ps1') 'Get-WidgetSettingFlag')
+    Assert ($null-eq (Get-WidgetSettingFlag ([pscustomobject]@{soundOn=$true}) 'bubbleTapAdvance')) 'A missing setting overrides the default'
+    Assert ((Get-WidgetSettingFlag ([pscustomobject]@{bubbleTapAdvance=$false}) 'bubbleTapAdvance')-eq $false) 'A saved off choice was not kept'
+  }
   Case 'Credit tooltip uses its own timestamp and preserves independent errors' {
     $previous=$script:status;$creditAt=1700000000000L
     try{
