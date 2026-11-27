@@ -32,11 +32,6 @@
       "layout": { "fontSize": 32, "width": 236 }
     },
     {
-      "text": "这个我不能做。但我可以给你三个能做的方案。",
-      "display": "这个我不能做。\n但我可以给你\n三个能做的方案。",
-      "layout": { "fontSize": 25, "width": 236 }
-    },
-    {
       "text": "有益、诚实、无害。",
       "display": "有益、\n诚实、\n无害。",
       "layout": { "fontSize": 32, "width": 236 }
