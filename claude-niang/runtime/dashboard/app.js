@@ -78,10 +78,11 @@ document.addEventListener('mousemove',event=>{
 document.addEventListener('mouseleave',()=>{tip.hidden=true;});
 let toastTimer=0;
 function toast(text){const t=$('toast');t.textContent=text;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.hidden=true;},2600);}
-// withTotal: also show 合计, every token counted (input, output, cache write, cache read).
-function usageTip(title,t,{withTotal=false}={}){
+// 合计 counts every token (input, output, cache write, cache read); t.allTokens
+// overrides it where the other numbers are not plain totals (the running sum).
+function usageTip(title,t){
   const row=(a,b)=>`<div class="row"><span>${a}</span><span>${b}</span></div>`;
-  return `<b>${esc(title)}</b>`+(withTotal?row('合计',L.formatTokens((t.input||0)+(t.output||0)+(t.cacheWrite||0)+(t.cacheRead||0))):'')+row('Tokens（输入+输出）',L.formatTokens(t.tokens))+row('输入',L.formatTokens(t.input))+row('输出',L.formatTokens(t.output))+
+  return `<b>${esc(title)}</b>`+row('合计',L.formatTokens(t.allTokens??L.allTokens(t)))+row('Tokens（输入+输出）',L.formatTokens(t.tokens))+row('输入',L.formatTokens(t.input))+row('输出',L.formatTokens(t.output))+
     row('缓存写入',L.formatTokens(t.cacheWrite))+row('缓存读取',L.formatTokens(t.cacheRead))+row('回复',t.replies+' 次')+row('参考费用',t.coverage===null?'—':L.formatCost(t.cost));
 }
 
@@ -139,7 +140,7 @@ function areaChart(points){
   // Invisible hover columns for the tooltip, and the date axis.
   const cols=el('div',{class:'bars dense'}),axis=el('div',{class:'axis'});const every=Math.ceil(n/10);
   points.forEach((p,i)=>{
-    cols.append(el('div',{class:'col',dataset:{tip:usageTip(p.day+' 累计',{...p,tokens:p.cumulativeTokens,cost:p.cumulativeCost,input:p.input,output:p.output})+`<div class="row"><span>当天</span><span>${L.formatTokens(p.tokens)}</span></div>`}}));
+    cols.append(el('div',{class:'col',dataset:{tip:usageTip(p.day+' 累计',{...p,tokens:p.cumulativeTokens,allTokens:p.cumulativeAll,cost:p.cumulativeCost,input:p.input,output:p.output})+`<div class="row"><span>当天</span><span>${L.formatTokens(p.tokens)}</span></div>`}}));
     axis.append(el('span',{text:i%every===0 || i===n-1?shortDay(p.day):''}));
   });
   box.append(cols,axis);
@@ -148,7 +149,7 @@ function areaChart(points){
 function heatmapChart(rows){
   const map=L.heatmap(rows,Date.now(),53),box=el('div');
   const grid=el('div',{class:'heatmap'});
-  for(const c of map.cells)grid.append(el('i',{class:c.future?'future':undefined,dataset:{l:String(c.level),tip:c.future?undefined:`<b>${c.day}</b><div class="row"><span>Tokens</span><span>${L.formatTokens(c.tokens)}</span></div><div class="row"><span>回复</span><span>${c.replies} 次</span></div>`}}));
+  for(const c of map.cells)grid.append(el('i',{class:c.future?'future':undefined,dataset:{l:String(c.level),tip:c.future?undefined:`<b>${c.day}</b><div class="row"><span>合计</span><span>${L.formatTokens(c.all)}</span></div><div class="row"><span>Tokens</span><span>${L.formatTokens(c.tokens)}</span></div><div class="row"><span>回复</span><span>${c.replies} 次</span></div>`}}));
   const scale=el('span',{class:'heat-scale'},'少',[0,1,2,3,4].map(l=>el('i',{style:`background:${['#f3ede8','#f4d7c9','#eab39b','#d98462','#c6613f'][l]}`})),'多');
   box.append(grid,el('div',{class:'heat-foot'},el('span',{text:'最近 53 周 · 每格一天'}),scale));
   return box;
@@ -275,7 +276,7 @@ function renderOverview(){
   const m=$('overview-metrics');m.replaceChildren();
   const noUsage=!state.haveUsage?'正在统计…':'本机还没有 Claude Code 记录';
   m.append(
-    metric('今日本机用量',state.rows.length?L.formatTokens(today.tokens):'—','Tokens',state.rows.length?'输入 '+L.formatTokens(today.input)+' · 输出 '+L.formatTokens(today.output):noUsage,state.rows.length?usageTip('今日',today,{withTotal:true}):null),
+    metric('今日本机用量',state.rows.length?L.formatTokens(today.tokens):'—','Tokens',state.rows.length?'输入 '+L.formatTokens(today.input)+' · 输出 '+L.formatTokens(today.output):noUsage,state.rows.length?usageTip('今日',today):null),
     metric('今日会话',String(today.sessions),'个',today.replies+' 次回复'+(state.rows.length?'':' · '+noUsage)),
     metric('缓存命中',L.formatPercent(today.cacheHit),'',today.cacheHit===null?'今天还没有缓存记录':'缓存读取 / 全部输入'),
     metric('今日参考费用',today.replies?L.formatCost(today.cost):'—','',today.replies?'定价覆盖 '+L.formatPercent(today.coverage)+' · 不是账单':'按 Claude API 公开价格估算',`<b>参考费用</b><div>${esc(PRICE_SOURCE)}；订阅不按 Token 计费，仅供参考。</div>`));
@@ -320,7 +321,7 @@ function renderLedger(){
   const now=Date.now(),rows=L.filterRows(state.rows,state.filter,now),t=L.totals(rows);
   const subReplies=rows.filter(r=>r.source==='subagent').length;
   const m=$('ledger-metrics');m.replaceChildren(
-    metric('Tokens',rows.length?L.formatTokens(t.tokens):'—','','输入 '+L.formatTokens(t.input)+' · 输出 '+L.formatTokens(t.output),rows.length?usageTip('筛选范围',t,{withTotal:true}):null),
+    metric('Tokens',rows.length?L.formatTokens(t.tokens):'—','','输入 '+L.formatTokens(t.input)+' · 输出 '+L.formatTokens(t.output),rows.length?usageTip('筛选范围',t):null),
     metric('会话',String(t.sessions),'个',t.replies+' 次回复'+(subReplies?' · 子代理 '+subReplies:'')),
     metric('缓存命中',L.formatPercent(t.cacheHit,1),'','读取 '+L.formatTokens(t.cacheRead)+' · 写入 '+L.formatTokens(t.cacheWrite)),
     metric('参考费用',rows.length?L.formatCost(t.cost):'—','',rows.length?'定价覆盖 '+L.formatPercent(t.coverage)+' · 不是账单':'按 Claude API 公开价格估算',`<b>参考费用</b><div>${esc(PRICE_SOURCE)}；订阅不按 Token 计费，仅供参考。</div>`));
