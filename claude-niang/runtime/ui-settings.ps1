@@ -142,9 +142,9 @@ function Initialize-WidgetSettingsMenu {
  </Style>
  <Style x:Key="SettingsPreset" TargetType="Button">
   <Setter Property="FontSize" Value="13"/><Setter Property="Foreground" Value="#9E5A3F"/><Setter Property="Background" Value="#F6ECE5"/>
-  <Setter Property="Padding" Value="8,6"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Cursor" Value="Hand"/>
+  <Setter Property="Padding" Value="4,6"/><Setter Property="BorderThickness" Value="0"/><Setter Property="Cursor" Value="Hand"/>
   <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
-   <Border x:Name="PresetBody" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border>
+   <Border x:Name="PresetBody" Background="{TemplateBinding Background}" CornerRadius="7" Padding="{TemplateBinding Padding}"><Viewbox StretchDirection="DownOnly" HorizontalAlignment="Center" VerticalAlignment="Center"><ContentPresenter/></Viewbox></Border>
    <ControlTemplate.Triggers>
     <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="PresetBody" Property="Background" Value="#F0DED3"/></Trigger>
     <Trigger Property="IsPressed" Value="True"><Setter TargetName="PresetBody" Property="Background" Value="#E9CDBD"/></Trigger>
@@ -202,9 +202,11 @@ function Initialize-WidgetSettingsMenu {
   $script:settingsMenuUi.Character=Add-SettingsAction '更换形象' {Open-WidgetCharacterGallery} -ReturnItem
   $script:settingsMenuUi.Character.ToolTip='选择形象或添加电脑上的图片'
   $script:settingsMenuUi.Appearance=Add-SettingsSubmenu '外观设置' {
-  $presets=New-Object Windows.Controls.Primitives.UniformGrid;$presets.Columns=3;$presets.Margin=[Windows.Thickness]::new(0,1,0,2);$script:settingsMenuUi.SizeButtons=@()
+  # The row also uses the 22px check-mark column (it never shows a check), so
+  # 「标准 · 100%」 fits; on narrow screens the labels shrink instead of clipping.
+  $presets=New-Object Windows.Controls.Primitives.UniformGrid;$presets.Columns=3;$presets.Margin=[Windows.Thickness]::new(-2,1,-24,2);$script:settingsMenuUi.SizeButtons=@()
   foreach($choice in @(@{label='小 · 80%';scale=0.8},@{label='标准 · 100%';scale=1.0},@{label='大 · 140%';scale=1.4})){
-    $button=New-Object Windows.Controls.Button;$button.Content=$choice.label;$button.Tag=$choice.scale;$button.Margin=[Windows.Thickness]::new(0,0,5,0);$button.Style=$script:settingsMenuResources['SettingsPreset']
+    $button=New-Object Windows.Controls.Button;$button.Content=$choice.label;$button.Tag=$choice.scale;$button.Margin=[Windows.Thickness]::new(2,0,2,0);$button.Style=$script:settingsMenuResources['SettingsPreset']
     $button.Add_Click({param($sender,$event)$script:sizeSlider.Value=[double]$sender.Tag;$event.Handled=$true})
     $presets.Children.Add($button)|Out-Null;$script:settingsMenuUi.SizeButtons+=,$button
   }
@@ -246,9 +248,9 @@ function Initialize-WidgetSettingsMenu {
   Add-SettingsDivider
   $script:settingsMenuUi.Tap=Add-SettingsAction '点角色也切换内容' {param($sender,$event)$script:bubbleTapAdvance=$sender.IsChecked;Save-Settings} -Description '开启后，连续点角色就能看下一句' -Checkable -ReturnItem
   } -ReturnItem
-  Add-SettingsAction '编辑我的语录' {Open-QuoteEditor}
   $script:settingsMenuUi.MusicEnabled=Add-SettingsAction '音乐律动' {param($sender,$event)Set-WidgetMusicEnabled ([bool]$sender.IsChecked);$script:context.IsOpen=$false} -Checkable -ReturnItem
   $script:settingsMenuUi.MusicEnabled.ToolTip='先听几拍确认节奏，再跟拍。拖动后松手可甩出，碰边反弹、落地继续跟拍。关闭后恢复原位置。'
+  Add-SettingsAction '编辑我的语录' {Open-QuoteEditor}
   $script:settingsMenuUi.AutoQuotes=Add-SettingsSubmenu '自动语录' {
     $script:settingsMenuUi.AutoQuoteEnabled=Add-SettingsAction '开启自动语录' {param($sender,$event)Set-WidgetAutoQuoteSettings ([bool]$sender.IsChecked) $script:autoQuoteIntervalSeconds;Update-WidgetSettingsMenu} -Checkable -ReturnItem
     Add-SettingsDivider

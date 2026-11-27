@@ -169,6 +169,20 @@ try{
       Assert ($saved.tapAdvanceVersion-eq 2 -and $saved.bubbleTapAdvance-eq $false) 'Saved settings do not mark the choice as made under the new default'
     }finally{$script:bubbleTapAdvance=$kept.tap;$script:bubbleScale=$kept.bubble;$script:settingsFile=$kept.file}
   }
+  Case 'Automatic quotes are on by default, once for old settings too' {
+    . (Import-Function (Join-Path $appDir 'runtime\quotes.ps1') 'Initialize-WidgetAutoQuoteSettings')
+    $kept=@{on=$script:autoQuoteEnabled;seconds=$script:autoQuoteIntervalSeconds}
+    try{
+      Initialize-WidgetAutoQuoteSettings $null
+      Assert ($script:autoQuoteEnabled -and $script:autoQuoteIntervalSeconds-eq 300) 'A first start does not turn automatic quotes on every 5 minutes'
+      Initialize-WidgetAutoQuoteSettings ([pscustomobject]@{autoQuoteEnabled=$false;autoQuoteIntervalSeconds=900})
+      Assert ($script:autoQuoteEnabled -and $script:autoQuoteIntervalSeconds-eq 900) 'An off value saved under the old default was kept, or the interval was lost'
+      Initialize-WidgetAutoQuoteSettings ([pscustomobject]@{autoQuoteEnabled=$false;autoQuoteVersion=2})
+      Assert (!$script:autoQuoteEnabled) 'An off choice saved after the change was overridden'
+      $save=[IO.File]::ReadAllText((Join-Path $appDir 'runtime\widget-settings.ps1'),[Text.Encoding]::UTF8)
+      Assert ($save-match 'autoQuoteEnabled=\$script:autoQuoteEnabled;autoQuoteVersion=2') 'Saved settings do not mark the choice as made under the new default'
+    }finally{$script:autoQuoteEnabled=$kept.on;$script:autoQuoteIntervalSeconds=$kept.seconds}
+  }
   Case 'Credit tooltip uses its own timestamp and preserves independent errors' {
     $previous=$script:status;$creditAt=1700000000000L
     try{

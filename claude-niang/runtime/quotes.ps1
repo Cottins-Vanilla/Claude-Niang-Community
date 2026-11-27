@@ -104,13 +104,15 @@ function Reset-WidgetQuotes([string]$DataDir) {
 
 
 # Automatic quotes use the existing widget loop and the same local quote pool.
-$script:autoQuoteEnabled=$false;$script:autoQuoteIntervalSeconds=300
+$script:autoQuoteEnabled=$true;$script:autoQuoteIntervalSeconds=300
 $script:autoQuoteNextAt=0;$script:autoQuoteLastTickAt=0;$script:autoQuoteWasEligible=$false;$script:autoQuoteDisplayCount=0
 
 function Initialize-WidgetAutoQuoteSettings($Settings) {
-  $script:autoQuoteEnabled=$false;$script:autoQuoteIntervalSeconds=300
+  $script:autoQuoteEnabled=$true;$script:autoQuoteIntervalSeconds=300
   $script:autoQuoteNextAt=0;$script:autoQuoteLastTickAt=0;$script:autoQuoteWasEligible=$false;$script:autoQuoteDisplayCount=0
-  if($Settings.autoQuoteEnabled-is [bool]){$script:autoQuoteEnabled=$Settings.autoQuoteEnabled}
+  # 「自动语录」从 autoQuoteVersion 2 起默认开启。更早保存的值是旧默认（关）随其他设置
+  # 一起存下的，忽略一次，让已有挂件也开启；之后再关掉会带着新版本号保存。
+  if($Settings.autoQuoteVersion-eq 2 -and $Settings.autoQuoteEnabled-is [bool]){$script:autoQuoteEnabled=$Settings.autoQuoteEnabled}
   try{
     $seconds=[double]$Settings.autoQuoteIntervalSeconds
     if(@(60,300,900)-contains $seconds){$script:autoQuoteIntervalSeconds=[int]$seconds}
