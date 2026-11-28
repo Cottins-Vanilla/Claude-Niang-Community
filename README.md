@@ -4,11 +4,11 @@
   <p><strong>把 Claude 额度，放进桌面角色的气泡里。</strong></p>
   <p>点一下看额度与重置时间，打开用量管理看本机 Claude Code 用量；也可以换形象、写语录，让她跟着音乐跳动。</p>
   <p>
-    <a href="https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/tag/v2.0.0"><img src="https://img.shields.io/badge/Release-v2.0.0-D97757" alt="当前版本 2.0.0"></a>
+    <a href="https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/tag/v2.1.0"><img src="https://img.shields.io/badge/Release-v2.1.0-D97757" alt="当前版本 2.1.0"></a>
     <a href="https://github.com/Cottins-Vanilla/Claude-Niang-Community/actions/workflows/ci.yml"><img src="https://github.com/Cottins-Vanilla/Claude-Niang-Community/actions/workflows/ci.yml/badge.svg?branch=main" alt="自动检查状态"></a>
     <img src="https://img.shields.io/badge/Windows-10%20%2F%2011-0078D4" alt="面向 Windows 10 / 11">
   </p>
-  <p><a href="https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/download/v2.0.0/claude-niang-v2.0.0-windows.zip"><strong>下载 Windows 完整包</strong></a> · <a href="#下载与安装">安装说明</a> · <a href="https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/tag/v2.0.0">版本更新</a> · <a href="#常见问题">常见问题</a> · <a href="https://github.com/Cottins-Vanilla/Claude-Niang-Community/issues/new/choose">反馈问题</a></p>
+  <p><a href="https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/download/v2.1.0/claude-niang-v2.1.0-windows.zip"><strong>下载 Windows 完整包</strong></a> · <a href="#下载与安装">安装说明</a> · <a href="https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/tag/v2.1.0">版本更新</a> · <a href="#常见问题">常见问题</a> · <a href="https://github.com/Cottins-Vanilla/Claude-Niang-Community/issues/new/choose">反馈问题</a></p>
 </div>
 
 > [!NOTE]
@@ -26,17 +26,18 @@
 | | 本仓库（原版） | 社区维护版 |
 |---|---|---|
 | 仓库 | The-Scales-of-Themis/Claude-Niang（原 Gryphus-Triune/Claude-Niang） | [Cottins-Vanilla/Claude-Niang-Community](https://github.com/Cottins-Vanilla/Claude-Niang-Community) |
-| 最新版本 | 1.3.3（2026-10-29），不再更新 | **2.0.0**（2026-11-24），后续版本都在这里发布 |
+| 最新版本 | 1.3.3（2026-10-29），不再更新 | **2.1.0**（2026-11-28），后续版本都在这里发布 |
 | 下载 | 下文「下载与安装」（旧版） | [Releases 最新版](https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/latest) |
 | 问题反馈 | 新问题请提交到社区维护版 | [提交反馈](https://github.com/Cottins-Vanilla/Claude-Niang-Community/issues/new/choose) |
 
-**2.0.0 相比 1.3.3 的主要变化**
+**社区维护版相比 1.3.3 的主要变化**
 
 - **新增「用量管理」窗口**（右键角色 → 账户总览）：
   - 账户总览：每个组织一张额度卡片，本机 Claude Code 今日用量、会话、缓存命中和参考费用，最近 14 天走势。
   - 用量账本：按时间、模型、对话筛选；Token 活动图和全年热力图；模型和对话分布；会话明细可搜索，可导出 CSV / JSON。
   - 参考费用按 Claude API 公开价格估算，订阅不按 Token 计费，仅供参考。只读取本机 Claude Code 会话记录里的 Tokens 数字，不读取对话内容。
 - **修复杀毒软件误报**：计划任务正常时不再在「启动」文件夹创建快捷方式，并移除本安装位置留下的旧快捷方式。这个快捷方式会被部分杀毒软件按外形误报为 LNK 木马下载器（如 TrojanDownloader/LNK.Agent）。
+- **2.1.0 新增**：「关于 Claude娘」和自动检查更新、重置后自动读取、账户总览的对话分布。
 - 其余功能和 1.3.3 相同。完整更新记录见社区维护版的 [CHANGELOG](https://github.com/Cottins-Vanilla/Claude-Niang-Community/blob/main/CHANGELOG.md)。
 
 **从 1.3.3 升级到社区维护版**
@@ -64,20 +65,20 @@ Free 或部分组织可能没有额度窗口；挂件无法提供接口没有返
 
 ## 下载与安装
 
-**当前程序版本：2.0.0** · [版本说明](https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/tag/v2.0.0) · [完整更新记录](CHANGELOG.md)
+**当前程序版本：2.1.0** · [版本说明](https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/tag/v2.1.0) · [完整更新记录](CHANGELOG.md)
 
-本版是社区版的第一个版本：新增「用量管理」窗口（账户总览和用量账本），并修复开机启动快捷方式被杀毒软件误报的问题。首次使用请选择 Windows 完整包；对话扩展为可选项。
+本版新增检查更新和重置后自动读取，账户总览按对话统计用量，用量账本筛选和右键菜单更顺手。首次使用请选择 Windows 完整包；对话扩展为可选项。
 
 先准备好 **Claude 桌面端、Node.js LTS 和 WebView2**。安装器会检查依赖；挂件使用自己的登录窗口，与 Claude 桌面端的登录相互独立。
 
 | 你要做什么 | 选择哪个文件 |
 |---|---|
-| 首次安装或更新挂件 | **[claude-niang-v2.0.0-windows.zip](https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/download/v2.0.0/claude-niang-v2.0.0-windows.zip)**，包含挂件和可选桌面扩展。 |
-| 已有挂件，只更新 Claude 对话扩展 | [claude-niang-usage.mcpb](https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/download/v2.0.0/claude-niang-usage.mcpb)，也可在完整包的“Claude桌面扩展”文件夹找到。[扩展安装说明](#在-claude-对话里问额度) |
-| 核对下载文件是否完整 | [SHA-256 校验文件](https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/download/v2.0.0/claude-niang-v2.0.0-windows.zip.sha256)，普通安装无需打开。 |
+| 首次安装或更新挂件 | **[claude-niang-v2.1.0-windows.zip](https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/download/v2.1.0/claude-niang-v2.1.0-windows.zip)**，包含挂件和可选桌面扩展。 |
+| 已有挂件，只更新 Claude 对话扩展 | [claude-niang-usage.mcpb](https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/download/v2.1.0/claude-niang-usage.mcpb)，也可在完整包的“Claude桌面扩展”文件夹找到。[扩展安装说明](#在-claude-对话里问额度) |
+| 核对下载文件是否完整 | [SHA-256 校验文件](https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/download/v2.1.0/claude-niang-v2.1.0-windows.zip.sha256)，普通安装无需打开。 |
 | 阅读或参与开发 | 仓库源码或发布页的 `Source code`；这些归档不包含构建好的桌面扩展。 |
 
-1. 点击上方 **Windows 完整包** 下载，或从 [2.0.0 发布页](https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/tag/v2.0.0) 的 Assets 选择同名 ZIP。
+1. 点击上方 **Windows 完整包** 下载，或从 [2.1.0 发布页](https://github.com/Cottins-Vanilla/Claude-Niang-Community/releases/tag/v2.1.0) 的 Assets 选择同名 ZIP。
 2. **完整解压**到以后不会移动的文件夹，例如 `%LOCALAPPDATA%\Programs\Claude娘额度挂件`。不要在压缩包里直接运行。
 3. 双击 **安装Claude娘.cmd**，按提示检查依赖并在 Claude 娘自己的登录窗口中登录 claude.ai。安装不需要管理员权限。
 4. 打开 Claude 桌面端主窗口，点右下角的角色或 **↻**。气泡出现读取时间和账号提供的额度窗口，就完成了。
@@ -261,7 +262,7 @@ claude.ai 的网页接口不是公开 API，随时可能变化而失效。请遵
 
 一个版本里同时有新功能和修复时，按新功能算（Y 递增）。每个版本只对应一个 `vX.Y.Z` 标签和一个 Release，已经公开的版本不会覆盖。
 
-测试版写作 `X.Y.Z-beta.N`，例如 `2.1.0-beta.6`：`X.Y.Z` 是即将发布的正式版，`N` 从 1 依次递增。测试版在发布页标为“预发布”，安装包名带完整版本（如 `claude-niang-v2.1.0-beta.6-windows.zip`），只提醒把更新范围设为「测试版」的用户；本页的版本号和下载链接始终指向最新正式版。
+测试版写作 `X.Y.Z-beta.N`，例如 `2.1.0-beta.6`：`X.Y.Z` 是即将发布的正式版，`N` 从 1 依次递增。测试版在发布页标为“预发布”，安装包名里也带完整版本（如 `-beta.6`），只提醒把更新范围设为「测试版」的用户；本页的版本号和下载链接始终指向最新正式版。
 
 ## 开发与贡献
 
