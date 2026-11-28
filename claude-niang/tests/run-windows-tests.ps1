@@ -153,20 +153,22 @@ try{
       Assert ($lines[1]-like '*未提供重置时间*' -and $lines[1]-notlike '*尚未开始计时*') 'A used window without a reset time was called unstarted'
     }finally{$script:status=$previous}
   }
-  Case 'Tapping the character advances the bubble by default, once for old settings too' {
+  Case 'Tapping the character does not advance the bubble by default, once for beta settings too' {
     $default=[regex]::Match([IO.File]::ReadAllText((Join-Path $appDir 'widget.ps1'),[Text.Encoding]::UTF8),'\$script:bubbleTapAdvance=\$(true|false)').Groups[1].Value
-    Assert ($default-eq 'true') 'The tap-to-advance default is not on'
+    Assert ($default-eq 'false') 'The tap-to-advance default is not off'
     $file=Join-Path $appDir 'runtime\widget-settings.ps1'
     foreach($name in @('Get-WidgetSettingFlag','Get-WidgetSettingNumber','Import-WidgetSettings','Save-Settings')){. (Import-Function $file $name)}
     $kept=@{tap=$script:bubbleTapAdvance;bubble=$script:bubbleScale;file=$script:settingsFile}
     try{
-      $script:bubbleTapAdvance=$true;Import-WidgetSettings ([pscustomobject]@{layoutVersion=2;bubbleTapAdvance=$false})
-      Assert $script:bubbleTapAdvance 'An off value saved under the old default was kept'
-      $script:bubbleTapAdvance=$true;Import-WidgetSettings ([pscustomobject]@{layoutVersion=2;bubbleTapAdvance=$false;tapAdvanceVersion=2})
-      Assert (!$script:bubbleTapAdvance) 'An off choice saved after the change was overridden'
+      $script:bubbleTapAdvance=$false;Import-WidgetSettings ([pscustomobject]@{layoutVersion=2;bubbleTapAdvance=$true;tapAdvanceVersion=2})
+      Assert (!$script:bubbleTapAdvance) 'An on value saved while the beta default was on was kept'
+      $script:bubbleTapAdvance=$false;Import-WidgetSettings ([pscustomobject]@{layoutVersion=2;bubbleTapAdvance=$true})
+      Assert $script:bubbleTapAdvance 'An on choice saved by 2.0.0 or earlier (default off) was overridden'
+      $script:bubbleTapAdvance=$false;Import-WidgetSettings ([pscustomobject]@{layoutVersion=2;bubbleTapAdvance=$true;tapAdvanceVersion=3})
+      Assert $script:bubbleTapAdvance 'An on choice saved after the change was overridden'
       $script:settingsFile=Join-Path $scratch 'tap-settings.json';Save-Settings
       $saved=Read-WidgetJsonFile $script:settingsFile
-      Assert ($saved.tapAdvanceVersion-eq 2 -and $saved.bubbleTapAdvance-eq $false) 'Saved settings do not mark the choice as made under the new default'
+      Assert ($saved.tapAdvanceVersion-eq 3 -and $saved.bubbleTapAdvance-eq $true) 'Saved settings do not mark the choice as made under the new default'
     }finally{$script:bubbleTapAdvance=$kept.tap;$script:bubbleScale=$kept.bubble;$script:settingsFile=$kept.file}
   }
   Case 'Automatic quotes are on by default, once for old settings too' {

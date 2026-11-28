@@ -30,9 +30,10 @@ function Import-WidgetSettings($Settings) {
   }else{$script:offsetBottom=0;if($script:offsetRight-gt 18){$script:anchor='free'}}
   $flag=Get-WidgetSettingFlag $Settings 'soundOn';if($null-ne $flag){$script:soundOn=$flag}
   $value=Get-WidgetSettingNumber $Settings 'soundVolume' ([double]::MinValue) ([double]::MaxValue);if($null-ne $value){$script:soundVolume=[Math]::Min(1.0,[Math]::Max(0.0,$value))}
-  # 「点角色也切换内容」从 tapAdvanceVersion 2 起默认开启。更早保存的值是旧默认（关）
-  # 随其他设置一起存下的，忽略一次，让已有挂件也开启；之后再关掉会带着新版本号保存。
-  if($Settings.tapAdvanceVersion-eq 2){$flag=Get-WidgetSettingFlag $Settings 'bubbleTapAdvance';if($null-ne $flag){$script:bubbleTapAdvance=$flag}}
+  # 「点角色也切换内容」默认关闭。2.1.0 测试版（tapAdvanceVersion 2）曾默认开启，那时保存的值
+  # 大多是随其他设置一起存下的默认值，忽略一次，让这些挂件也关闭；之后再开启会带着版本 3 保存。
+  # 没有版本号的是 2.0.0 及更早保存的，当时默认也是关闭，照常沿用。
+  if($Settings.tapAdvanceVersion-ne 2){$flag=Get-WidgetSettingFlag $Settings 'bubbleTapAdvance';if($null-ne $flag){$script:bubbleTapAdvance=$flag}}
   $flag=Get-WidgetSettingFlag $Settings 'hideMenu';if($null-ne $flag){$script:hideMenu=$flag}
   $flag=Get-WidgetSettingFlag $Settings 'followHost';if($null-ne $flag){$script:followHost=$flag}
   $flag=Get-WidgetSettingFlag $Settings 'desktopTopmost';if($null-ne $flag){$script:desktopTopmost=$flag}
@@ -45,7 +46,7 @@ function Save-Settings {
   Write-WidgetJson $script:settingsFile @{
     layoutVersion=2;right=$script:offsetRight;left=$script:offsetLeft;bottom=$script:offsetBottom;anchor=$script:anchor;side=$script:side
     scale=$script:scale;bubbleScale=$script:bubbleScale;collapsed=$script:collapsed
-    soundOn=$script:soundOn;soundVolume=$script:soundVolume;bubbleTapAdvance=$script:bubbleTapAdvance;tapAdvanceVersion=2;hideMenu=$script:hideMenu
+    soundOn=$script:soundOn;soundVolume=$script:soundVolume;bubbleTapAdvance=$script:bubbleTapAdvance;tapAdvanceVersion=3;hideMenu=$script:hideMenu
     followHost=$script:followHost;desktopTopmost=$script:desktopTopmost;desktopLeft=$script:desktopLeft;desktopTop=$script:desktopTop
     characterId=$script:characterId;autoQuoteEnabled=$script:autoQuoteEnabled;autoQuoteVersion=2;autoQuoteIntervalSeconds=$script:autoQuoteIntervalSeconds
     preferredOrg=$script:preferredOrg;lowQuotaAlert=$script:lowQuotaAlert;resetAlert=$script:resetAlert;resetAutoRead=$script:resetAutoRead
